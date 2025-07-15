@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Именинники по неделям</title>
+  <title>Іменинники по тижнях</title>
   <style>
     body {
       margin: 0;
@@ -13,12 +12,14 @@
       background: #f5f5f5;
       color: #333;
     }
-    h1 {
+    h1, h3 {
       text-align: center;
-      margin-bottom: 40px;
-      font-size: 2em;
+      margin-bottom: 10px;
       color: #222;
     }
+    h1 { font-size: 2em; }
+    h3 { font-size: 1.1em; margin-bottom: 40px; color: #555; }
+
     .week-block {
       background: #fff;
       border-radius: 12px;
@@ -26,23 +27,19 @@
       padding: 20px;
       margin-bottom: 20px;
     }
+    .week-prev { background-color: #eef6ff; }
+    .week-next { background-color: #fff8e1; }
     .week-block h2 {
       margin: 0 0 10px;
       font-size: 1.2em;
       color: #0077cc;
     }
-    ul {
-      list-style: none;
-      padding-left: 0;
-      margin: 0;
-    }
+    ul { list-style: none; padding-left: 0; margin: 0; }
     li {
       padding: 10px;
       border-bottom: 1px solid #eee;
     }
-    li:last-child {
-      border-bottom: none;
-    }
+    li:last-child { border-bottom: none; }
     .person-info {
       display: flex;
       flex-direction: column;
@@ -50,7 +47,6 @@
     .person-name {
       font-weight: bold;
       font-size: 1.1em;
-      margin-bottom: 8px;
     }
     .person-meta {
       font-size: 0.9em;
@@ -58,7 +54,9 @@
     }
     img {
       object-fit: cover;
+      cursor: pointer;
     }
+
     @media (min-width: 600px) {
       .person-info {
         flex-direction: row;
@@ -70,13 +68,39 @@
         min-width: 200px;
       }
     }
+
+    /* Модальное окно */
+    #modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+    }
+    #modal img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 10px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    }
   </style>
 </head>
 <body>
-  <h1>Именинники по неделям</h1>
-  <div id="loading">Загрузка данных...</div>
+  <h1>Іменинники по тижнях</h1>
+  <h3>Розширена версія (церква ЄХБ "Дім Євангелія", м.Суми)</h3>
+  <div id="loading">Завантаження даних...</div>
   <div id="error"></div>
   <div id="list"></div>
+
+  <!-- Модалка -->
+  <div id="modal" onclick="this.style.display='none'">
+    <img id="modal-img" src="" alt="Фото" />
+  </div>
 
   <script>
     async function loadData() {
@@ -101,7 +125,7 @@
     function showError(msg) {
       hideAll();
       const err = document.getElementById('error');
-      err.textContent = 'Ошибка загрузки: ' + msg;
+      err.textContent = 'Помилка завантаження: ' + msg;
       err.style.display = 'block';
     }
 
@@ -115,20 +139,48 @@
       return age;
     }
 
-    function getWeeksOfMonth(year, month) {
+    function getWeeksExtended(year, month) {
       const weeks = [];
       const firstDay = new Date(year, month, 1);
-      let start = new Date(firstDay);
-      start.setDate(start.getDate() - (start.getDay() === 0 ? 6 : start.getDay() - 1)); // к понедельнику
+      const lastDay = new Date(year, month + 1, 0);
 
-      while (start.getMonth() <= month) {
+      let start = new Date(firstDay);
+      start.setDate(start.getDate() - (start.getDay() === 0 ? 6 : start.getDay() - 1));
+
+      const prevWeekStart = new Date(start);
+      prevWeekStart.setDate(prevWeekStart.getDate() - 7);
+      const prevWeekEnd = new Date(prevWeekStart);
+      prevWeekEnd.setDate(prevWeekEnd.getDate() + 6);
+      weeks.push({ start: prevWeekStart, end: prevWeekEnd, items: [], type: 'prev' });
+
+      while (start <= lastDay || start.getDay() !== 1) {
         const end = new Date(start);
         end.setDate(start.getDate() + 6);
-        weeks.push({ start: new Date(start), end: new Date(end), items: [] });
+        weeks.push({ start: new Date(start), end, items: [], type: 'current' });
         start.setDate(start.getDate() + 7);
-        if (start.getMonth() > month && start.getDate() > 7) break;
       }
+
+      const nextWeekStart = new Date(start);
+      const nextWeekEnd = new Date(nextWeekStart);
+      nextWeekEnd.setDate(nextWeekEnd.getDate() + 6);
+      weeks.push({ start: nextWeekStart, end: nextWeekEnd, items: [], type: 'next' });
+
       return weeks;
+    }
+
+    function formatDateRange(start, end) {
+      const locale = 'uk-UA';
+      const options = { day: 'numeric', month: 'long' };
+      const startStr = start.toLocaleDateString(locale, options);
+      const endStr = end.toLocaleDateString(locale, options);
+      return `${startStr} – ${endStr}`;
+    }
+
+    function openModal(src) {
+      const modal = document.getElementById('modal');
+      const img = document.getElementById('modal-img');
+      img.src = src;
+      modal.style.display = 'flex';
     }
 
     function processData(data) {
@@ -136,16 +188,13 @@
       const now = new Date();
       const year = now.getFullYear();
       const month = now.getMonth();
-      const monthName = now.toLocaleDateString('ru-RU', { month: 'long' });
 
-      const weeks = getWeeksOfMonth(year, month);
+      const weeks = getWeeksExtended(year, month);
 
       data.entries.forEach(person => {
         const birthDate = new Date(person.birthdate);
-        if (birthDate.getMonth() !== month) return;
-
-        const thisYearBday = new Date(year, month, birthDate.getDate());
-        const fullDate = thisYearBday.toLocaleDateString('ru-RU');
+        const thisYearBday = new Date(year, birthDate.getMonth(), birthDate.getDate());
+        const fullDate = thisYearBday.toLocaleDateString('uk-UA');
         const age = calculateAge(birthDate);
 
         for (let week of weeks) {
@@ -164,17 +213,25 @@
       });
 
       const container = document.getElementById('list');
-      weeks.forEach((week, index) => {
+      let currentWeekIndex = 1;
+
+      weeks.forEach(week => {
         if (week.items.length === 0) return;
 
-        const start = week.start.getDate();
-        const end = week.end.getDate();
-        const h = document.createElement('div');
-        h.className = 'week-block';
+        const block = document.createElement('div');
+        block.className = 'week-block';
+        if (week.type === 'prev') block.classList.add('week-prev');
+        if (week.type === 'next') block.classList.add('week-next');
 
         const title = document.createElement('h2');
-        title.textContent = `Неделя ${index + 1} (${start}–${end} ${monthName})`;
-        h.appendChild(title);
+        if (week.type === 'prev') {
+          title.textContent = `Попередній тиждень (${formatDateRange(week.start, week.end)})`;
+        } else if (week.type === 'next') {
+          title.textContent = `Наступний тиждень (${formatDateRange(week.start, week.end)})`;
+        } else {
+          title.textContent = `Тиждень ${currentWeekIndex++} (${formatDateRange(week.start, week.end)})`;
+        }
+        block.appendChild(title);
 
         const ul = document.createElement('ul');
         week.items.forEach(p => {
@@ -195,6 +252,7 @@
           img.onerror = () => {
             img.src = 'https://raw.githubusercontent.com/christian-word/slider/main/4054617.png';
           };
+          img.onclick = () => openModal(`https://drive.google.com/uc?export=view&id=${p.id}`);
 
           const nameText = document.createElement('span');
           nameText.textContent = p.name;
@@ -211,8 +269,8 @@
           meta.className = 'person-meta';
           meta.innerHTML = `
             Дата: ${p.fullDate}<br>
-            Год рождения: ${p.birthYear}<br>
-            Возраст: ${p.age} лет${p.phone ? `<br>Тел: ${p.phone}` : ''}
+            Рік народження: ${p.birthYear}<br>
+            Вік: ${p.age} років${p.phone ? `<br>Тел.: ${p.phone}` : ''}
           `;
 
           info.appendChild(nameBlock);
@@ -221,8 +279,8 @@
           ul.appendChild(li);
         });
 
-        h.appendChild(ul);
-        container.appendChild(h);
+        block.appendChild(ul);
+        container.appendChild(block);
       });
     }
 
@@ -230,3 +288,4 @@
   </script>
 </body>
 </html>
+
