@@ -1,0 +1,189 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Именинники по неделям</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 2em;
+      color: #222;
+    }
+    .week-block {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .week-block h2 {
+      margin: 0 0 10px;
+      font-size: 1.2em;
+      color: #0077cc;
+    }
+    ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+    }
+    li {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    li:last-child {
+      border-bottom: none;
+    }
+    .person-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .person-name {
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+    .person-meta {
+      font-size: 0.9em;
+      color: #555;
+    }
+    #loading, #error {
+      text-align: center;
+      font-size: 1.2em;
+      margin: 40px 0;
+      display: none;
+    }
+    @media (min-width: 600px) {
+      .person-info {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .person-meta {
+        text-align: right;
+        min-width: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Именинники месяца</h1>
+  <div id="loading">Загрузка данных...</div>
+  <div id="error"></div>
+  <div id="list"></div>
+
+  <script>
+    async function loadData() {
+      try {
+        hideAll();
+        document.getElementById('loading').style.display = 'block';
+        const res = await fetch('https://dl.dropboxusercontent.com/scl/fi/o2je5n0ib8v4zsjeq12ix/photo-database.json?rlkey=gm6ofx2gq2g8u8te976gwqs7d&dl=1');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const json = await res.json();
+        processData(json);
+      } catch (e) {
+        showError(e.message);
+      }
+    }
+
+    function hideAll() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error').style.display = 'none';
+      document.getElementById('list').innerHTML = '';
+    }
+
+    function showError(msg) {
+      hideAll();
+      const err = document.getElementById('error');
+      err.textContent = 'Ошибка загрузки: ' + msg;
+      err.style.display = 'block';
+    }
+
+    function calculateAge(birthDate) {
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age;
+    }
+
+    function processData(data) {
+      hideAll();
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+      const monthName = now.toLocaleDateString('ru-RU', { month: 'long' });
+      const weeks = [[], [], [], [], [], []];
+
+      data.entries.forEach(person => {
+        const birthDate = new Date(person.birthdate);
+        if (birthDate.getMonth() === currentMonth) {
+          const birthdayThisYear = new Date(currentYear, currentMonth, birthDate.getDate());
+          const weekIndex = Math.floor((birthdayThisYear.getDate() - 1) / 7);
+          weeks[weekIndex].push({
+            name: person.lastname,
+            fullDate: birthdayThisYear.toLocaleDateString('ru-RU'),
+            birthYear: birthDate.getFullYear(),
+            age: calculateAge(birthDate),
+            phone: person.phone || ''
+          });
+        }
+      });
+
+      const container = document.getElementById('list');
+
+      weeks.forEach((week, index) => {
+        if (week.length > 0) {
+          const startDay = index * 7 + 1;
+          const endDay = Math.min((index + 1) * 7, daysInMonth);
+          const weekDiv = document.createElement('div');
+          weekDiv.className = 'week-block';
+
+          const h2 = document.createElement('h2');
+          h2.textContent = `Неделя ${index + 1} (${startDay}–${endDay} ${monthName})`;
+          weekDiv.appendChild(h2);
+
+          const ul = document.createElement('ul');
+          week.forEach(p => {
+            const li = document.createElement('li');
+            const info = document.createElement('div');
+            info.className = 'person-info';
+
+            const name = document.createElement('div');
+            name.className = 'person-name';
+            name.textContent = p.name;
+
+            const meta = document.createElement('div');
+            meta.className = 'person-meta';
+            meta.innerHTML = `
+              Дата: ${p.fullDate}<br>
+              Год рождения: ${p.birthYear}<br>
+              Возраст: ${p.age} лет${p.phone ? `<br>Тел: ${p.phone}` : ''}
+            `;
+
+            info.appendChild(name);
+            info.appendChild(meta);
+            li.appendChild(info);
+            ul.appendChild(li);
+          });
+
+          weekDiv.appendChild(ul);
+          container.appendChild(weekDiv);
+        }
+      });
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
