@@ -178,7 +178,6 @@
 <script>
 let slideIndex = 0, slides = [], people = [];
 
-
 window.addEventListener('load', loadData);
 
 function retryLoad() { loadData(); }
@@ -196,14 +195,14 @@ document.getElementById('upload-area').addEventListener('drop', e => {
 document.getElementById('upload-area').addEventListener('dragover', e => e.preventDefault());
 
 function handleFile(file) {
-  if (!file.name.endsWith('.json')) return alert('Файл должен быть .json');
+  if (!file.name.endsWith('.json')) return alert('Файл має бути у форматі .json');
   const reader = new FileReader();
   reader.onload = e => {
     try {
       const json = JSON.parse(e.target.result);
       processData(json);
     } catch {
-      showError('Ошибка чтения JSON файла');
+      showError('Помилка читання JSON-файлу');
     }
   };
   reader.readAsText(file);
@@ -223,7 +222,7 @@ async function loadData() {
   try {
     hideAll();
     document.getElementById('loading').style.display = 'block';
-const res = await fetch('https://dl.dropboxusercontent.com/scl/fi/o2je5n0ib8v4zsjeq12ix/photo-database.json?rlkey=gm6ofx2gq2g8u8te976gwqs7d&dl=1');
+    const res = await fetch('https://dl.dropboxusercontent.com/scl/fi/o2je5n0ib8v4zsjeq12ix/photo-database.json?rlkey=gm6ofx2gq2g8u8te976gwqs7d&dl=1');
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
     processData(json);
@@ -232,9 +231,19 @@ const res = await fetch('https://dl.dropboxusercontent.com/scl/fi/o2je5n0ib8v4zs
   }
 }
 
+function calculateAge(birthdate) {
+  const birth = new Date(birthdate);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+}
 
 function processData(data) {
-  if (!Array.isArray(data.entries)) return showError('Нет массива entries');
+  if (!Array.isArray(data.entries)) return showError('Відсутній масив entries у JSON');
   const today = new Date();
   const pastWeek = new Date();
   pastWeek.setDate(today.getDate() - 6);
@@ -252,24 +261,44 @@ function processData(data) {
   }
 
   const infoBlock = document.getElementById('info-list');
-  infoBlock.innerHTML = `<h2>Найдено ${people.length} человек:</h2>` +
+  infoBlock.innerHTML = `<h2>Знайдено ${people.length} осіб:</h2>` +
     '<ul style="list-style:none;padding:0">' +
     people.map(p => {
       const birth = new Date(p.birthdate);
-      const age = today.getFullYear() - birth.getFullYear();
-      return `<li style="margin:10px 0">${p.lastname}, ${birth.toLocaleDateString('ru-RU')} — ${age} лет</li>`;
+      const age = calculateAge(p.birthdate);
+      return `<li style="margin:10px 0">${p.lastname}, ${birth.toLocaleDateString('uk-UA')} — ${age} років</li>`;
     }).join('') + '</ul>' +
-    '<button class="retry-btn" onclick="startSlideshow()">▶️ Начать показ</button>';
+    `<label style="display:block;margin:20px 0;font-size:1em;">
+       <input type="checkbox" id="fullscreen-checkbox" style="transform:scale(1.5);margin-right:10px;" checked>
+       Запустити в повноекранному режимі
+     </label>` +
+    '<button class="retry-btn" onclick="startSlideshow()">▶️ Почати показ</button>';
 
   hideAll();
   infoBlock.style.display = 'block';
 }
 
 function startSlideshow() {
+  const fs = document.getElementById('fullscreen-checkbox');
+  if (fs && fs.checked) {
+    requestFullscreen();
+  }
+
   document.getElementById('info-list').style.display = 'none';
   document.getElementById('slider').style.display = 'block';
   document.body.style.background = 'none';
   buildSlides();
+}
+
+function requestFullscreen() {
+  const el = document.documentElement;
+  if (el.requestFullscreen) {
+    el.requestFullscreen();
+  } else if (el.webkitRequestFullscreen) {
+    el.webkitRequestFullscreen();
+  } else if (el.msRequestFullscreen) {
+    el.msRequestFullscreen();
+  }
 }
 
 function buildSlides() {
@@ -296,6 +325,7 @@ function buildSlides() {
   }
   updateSlider();
 }
+
 function createCard(p) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -304,22 +334,24 @@ function createCard(p) {
   img.className = 'fallback-image';
   img.src = `https://drive.google.com/thumbnail?id=${p.id}&sz=w500`;
   img.onerror = () => {
-     img.src = 'https://raw.githubusercontent.com/ruyriy/Audio-christ/main/ICO/church_image.jpg';
+    img.src = 'https://raw.githubusercontent.com/christian-word/slider/main/4054617.png';
   };
 
   card.appendChild(img);
 
   const info = document.createElement('div');
   info.className = 'info';
+  const age = calculateAge(p.birthdate);
   info.innerHTML = `
     <strong>${p.lastname}</strong>
-    <div>${new Date(p.birthdate).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-    <div>${p.age} лет</div>
+    <div>${new Date(p.birthdate).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+    <div>${age} років</div>
   `;
   card.appendChild(info);
 
   return card;
 }
+
 function updateSlider() {
   document.getElementById('slides-container').style.transform = `translateX(-${slideIndex * 100}%)`;
 }
@@ -332,5 +364,6 @@ function prevSlide() {
   updateSlider();
 }
 </script>
+
 </body>
 </html>
