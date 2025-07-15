@@ -391,6 +391,10 @@ function prevSlide() {
   slideIndex = (slideIndex - 1 + slides.length) % slides.length;
   updateSlider();
 }
+
+ window.startSlideshow = startSlideshow;
+window.retryLoad = retryLoad;
+window.selectFile = selectFile; 
 </script>
 
 
