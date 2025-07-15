@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Іменинники по тижнях</title>
+  <title>Именинники по неделям</title>
   <style>
     body {
       margin: 0;
@@ -13,18 +13,11 @@
       background: #f5f5f5;
       color: #333;
     }
-    h1, h3 {
-      text-align: center;
-      margin-bottom: 10px;
-      color: #222;
-    }
     h1 {
-      font-size: 2em;
-    }
-    h3 {
-      font-size: 1.1em;
+      text-align: center;
       margin-bottom: 40px;
-      color: #555;
+      font-size: 2em;
+      color: #222;
     }
     .week-block {
       background: #fff;
@@ -32,12 +25,6 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.05);
       padding: 20px;
       margin-bottom: 20px;
-    }
-    .week-prev {
-      background-color: #eef6ff;
-    }
-    .week-next {
-      background-color: #fff8e1;
     }
     .week-block h2 {
       margin: 0 0 10px;
@@ -63,16 +50,14 @@
     .person-name {
       font-weight: bold;
       font-size: 1.1em;
+      margin-bottom: 8px;
     }
     .person-meta {
       font-size: 0.9em;
       color: #555;
     }
-    #loading, #error {
-      text-align: center;
-      font-size: 1.2em;
-      margin: 40px 0;
-      display: none;
+    img {
+      object-fit: cover;
     }
     @media (min-width: 600px) {
       .person-info {
@@ -88,9 +73,8 @@
   </style>
 </head>
 <body>
-  <h1>Іменинники по тижнях</h1>
-  <h3>Розширена версія (церква ЄХБ "Дім Євангелія", м.Суми)</h3>
-  <div id="loading">Завантаження даних...</div>
+  <h1>Именинники по неделям</h1>
+  <div id="loading">Загрузка данных...</div>
   <div id="error"></div>
   <div id="list"></div>
 
@@ -117,7 +101,7 @@
     function showError(msg) {
       hideAll();
       const err = document.getElementById('error');
-      err.textContent = 'Помилка завантаження: ' + msg;
+      err.textContent = 'Ошибка загрузки: ' + msg;
       err.style.display = 'block';
     }
 
@@ -131,45 +115,20 @@
       return age;
     }
 
-    function getWeeksExtended(year, month) {
+    function getWeeksOfMonth(year, month) {
       const weeks = [];
-
       const firstDay = new Date(year, month, 1);
-      const lastDay = new Date(year, month + 1, 0);
-
       let start = new Date(firstDay);
-      start.setDate(start.getDate() - (start.getDay() === 0 ? 6 : start.getDay() - 1));
+      start.setDate(start.getDate() - (start.getDay() === 0 ? 6 : start.getDay() - 1)); // к понедельнику
 
-      // Тиждень до місяця
-      const prevWeekStart = new Date(start);
-      prevWeekStart.setDate(prevWeekStart.getDate() - 7);
-      const prevWeekEnd = new Date(prevWeekStart);
-      prevWeekEnd.setDate(prevWeekEnd.getDate() + 6);
-      weeks.push({ start: prevWeekStart, end: prevWeekEnd, items: [], type: 'prev' });
-
-      // Основні тижні місяця
-      while (start <= lastDay || start.getDay() !== 1) {
+      while (start.getMonth() <= month) {
         const end = new Date(start);
         end.setDate(start.getDate() + 6);
-        weeks.push({ start: new Date(start), end, items: [], type: 'current' });
+        weeks.push({ start: new Date(start), end: new Date(end), items: [] });
         start.setDate(start.getDate() + 7);
+        if (start.getMonth() > month && start.getDate() > 7) break;
       }
-
-      // Тиждень після місяця
-      const nextWeekStart = new Date(start);
-      const nextWeekEnd = new Date(nextWeekStart);
-      nextWeekEnd.setDate(nextWeekEnd.getDate() + 6);
-      weeks.push({ start: nextWeekStart, end: nextWeekEnd, items: [], type: 'next' });
-
       return weeks;
-    }
-
-    function formatDateRange(start, end) {
-      const locale = 'uk-UA';
-      const options = { day: 'numeric', month: 'long' };
-      const startStr = start.toLocaleDateString(locale, options);
-      const endStr = end.toLocaleDateString(locale, options);
-      return `${startStr} – ${endStr}`;
     }
 
     function processData(data) {
@@ -177,13 +136,16 @@
       const now = new Date();
       const year = now.getFullYear();
       const month = now.getMonth();
+      const monthName = now.toLocaleDateString('ru-RU', { month: 'long' });
 
-      const weeks = getWeeksExtended(year, month);
+      const weeks = getWeeksOfMonth(year, month);
 
       data.entries.forEach(person => {
         const birthDate = new Date(person.birthdate);
-        const thisYearBday = new Date(year, birthDate.getMonth(), birthDate.getDate());
-        const fullDate = thisYearBday.toLocaleDateString('uk-UA');
+        if (birthDate.getMonth() !== month) return;
+
+        const thisYearBday = new Date(year, month, birthDate.getDate());
+        const fullDate = thisYearBday.toLocaleDateString('ru-RU');
         const age = calculateAge(birthDate);
 
         for (let week of weeks) {
@@ -193,7 +155,8 @@
               fullDate,
               birthYear: birthDate.getFullYear(),
               age,
-              phone: person.phone || ''
+              phone: person.phone || '',
+              id: person.id || ''
             });
             break;
           }
@@ -201,25 +164,17 @@
       });
 
       const container = document.getElementById('list');
-      let currentWeekIndex = 1;
-
-      weeks.forEach(week => {
+      weeks.forEach((week, index) => {
         if (week.items.length === 0) return;
 
-        const block = document.createElement('div');
-        block.className = 'week-block';
-        if (week.type === 'prev') block.classList.add('week-prev');
-        if (week.type === 'next') block.classList.add('week-next');
+        const start = week.start.getDate();
+        const end = week.end.getDate();
+        const h = document.createElement('div');
+        h.className = 'week-block';
 
         const title = document.createElement('h2');
-        if (week.type === 'prev') {
-          title.textContent = `Попередній тиждень (${formatDateRange(week.start, week.end)})`;
-        } else if (week.type === 'next') {
-          title.textContent = `Наступний тиждень (${formatDateRange(week.start, week.end)})`;
-        } else {
-          title.textContent = `Тиждень ${currentWeekIndex++} (${formatDateRange(week.start, week.end)})`;
-        }
-        block.appendChild(title);
+        title.textContent = `Неделя ${index + 1} (${start}–${end} ${monthName})`;
+        h.appendChild(title);
 
         const ul = document.createElement('ul');
         week.items.forEach(p => {
@@ -227,26 +182,47 @@
           const info = document.createElement('div');
           info.className = 'person-info';
 
-          const name = document.createElement('div');
-          name.className = 'person-name';
-          name.textContent = p.name;
+          const nameBlock = document.createElement('div');
+          nameBlock.className = 'person-name';
+
+          const img = document.createElement('img');
+          img.src = `https://drive.google.com/thumbnail?id=${p.id}&sz=w200`;
+          img.alt = p.name;
+          img.style.width = '50px';
+          img.style.height = '50px';
+          img.style.borderRadius = '50%';
+          img.style.marginRight = '10px';
+          img.onerror = () => {
+            img.src = 'https://raw.githubusercontent.com/christian-word/slider/main/4054617.png';
+          };
+
+          const nameText = document.createElement('span');
+          nameText.textContent = p.name;
+
+          const nameContainer = document.createElement('div');
+          nameContainer.style.display = 'flex';
+          nameContainer.style.alignItems = 'center';
+          nameContainer.appendChild(img);
+          nameContainer.appendChild(nameText);
+
+          nameBlock.appendChild(nameContainer);
 
           const meta = document.createElement('div');
           meta.className = 'person-meta';
           meta.innerHTML = `
             Дата: ${p.fullDate}<br>
-            Рік народження: ${p.birthYear}<br>
-            Вік: ${p.age} років${p.phone ? `<br>Тел.: ${p.phone}` : ''}
+            Год рождения: ${p.birthYear}<br>
+            Возраст: ${p.age} лет${p.phone ? `<br>Тел: ${p.phone}` : ''}
           `;
 
-          info.appendChild(name);
+          info.appendChild(nameBlock);
           info.appendChild(meta);
           li.appendChild(info);
           ul.appendChild(li);
         });
 
-        block.appendChild(ul);
-        container.appendChild(block);
+        h.appendChild(ul);
+        container.appendChild(h);
       });
     }
 
