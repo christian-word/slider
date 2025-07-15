@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -180,18 +180,39 @@ let slideIndex = 0, slides = [], people = [];
 
 window.addEventListener('load', loadData);
 
+if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+  window.addEventListener('DOMContentLoaded', () => {
+    const interval = setInterval(() => {
+      const checkbox = document.getElementById('fullscreen-checkbox');
+      if (checkbox) {
+        checkbox.checked = false;
+        checkbox.disabled = true;
+        clearInterval(interval);
+      }
+    }, 100);
+  });
+}
+
 function retryLoad() { loadData(); }
+
 function showManualUpload() {
   hideAll();
   document.getElementById('upload-area').style.display = 'block';
 }
-function selectFile() { document.getElementById('file-input').click(); }
+
+function selectFile() {
+  document.getElementById('file-input').click();
+}
+
 document.getElementById('file-input').addEventListener('change', e => {
   if (e.target.files.length) handleFile(e.target.files[0]);
 });
+
 document.getElementById('upload-area').addEventListener('drop', e => {
-  e.preventDefault(); handleFile(e.dataTransfer.files[0]);
+  e.preventDefault();
+  handleFile(e.dataTransfer.files[0]);
 });
+
 document.getElementById('upload-area').addEventListener('dragover', e => e.preventDefault());
 
 function handleFile(file) {
@@ -209,15 +230,17 @@ function handleFile(file) {
 }
 
 function hideAll() {
-  ['loading','error','upload-area','slider','no-birthdays','info-list'].forEach(id => {
+  ['loading', 'error', 'upload-area', 'slider', 'no-birthdays', 'info-list'].forEach(id => {
     document.getElementById(id).style.display = 'none';
   });
 }
+
 function showError(msg) {
   hideAll();
   document.getElementById('error-message').textContent = msg;
   document.getElementById('error').style.display = 'block';
 }
+
 async function loadData() {
   try {
     hideAll();
@@ -244,13 +267,18 @@ function calculateAge(birthdate) {
 
 function processData(data) {
   if (!Array.isArray(data.entries)) return showError('Відсутній масив entries у JSON');
+
   const today = new Date();
-  const pastWeek = new Date();
+  const pastWeek = new Date(today);
   pastWeek.setDate(today.getDate() - 6);
 
+  today.setHours(23, 59, 59, 999);
+  pastWeek.setHours(0, 0, 0, 0);
+
   people = data.entries.filter(p => {
-    const b = new Date(p.birthdate);
-    b.setFullYear(today.getFullYear());
+    if (!p.birthdate) return false;
+    const [y, m, d] = p.birthdate.trim().split('-');
+    const b = new Date(today.getFullYear(), parseInt(m) - 1, parseInt(d));
     return b >= pastWeek && b <= today;
   });
 
@@ -264,7 +292,8 @@ function processData(data) {
   infoBlock.innerHTML = `<h2>Знайдено ${people.length} осіб:</h2>` +
     '<ul style="list-style:none;padding:0">' +
     people.map(p => {
-      const birth = new Date(p.birthdate);
+      const [y, m, d] = p.birthdate.trim().split('-');
+      const birth = new Date(today.getFullYear(), parseInt(m) - 1, parseInt(d));
       const age = calculateAge(p.birthdate);
       return `<li style="margin:10px 0">${p.lastname}, ${birth.toLocaleDateString('uk-UA')} — ${age} років</li>`;
     }).join('') + '</ul>' +
@@ -280,9 +309,7 @@ function processData(data) {
 
 function startSlideshow() {
   const fs = document.getElementById('fullscreen-checkbox');
-  if (fs && fs.checked) {
-    requestFullscreen();
-  }
+  if (fs && fs.checked) requestFullscreen();
 
   document.getElementById('info-list').style.display = 'none';
   document.getElementById('slider').style.display = 'block';
@@ -292,13 +319,9 @@ function startSlideshow() {
 
 function requestFullscreen() {
   const el = document.documentElement;
-  if (el.requestFullscreen) {
-    el.requestFullscreen();
-  } else if (el.webkitRequestFullscreen) {
-    el.webkitRequestFullscreen();
-  } else if (el.msRequestFullscreen) {
-    el.msRequestFullscreen();
-  }
+  if (el.requestFullscreen) el.requestFullscreen();
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  else if (el.msRequestFullscreen) el.msRequestFullscreen();
 }
 
 function buildSlides() {
@@ -320,9 +343,11 @@ function buildSlides() {
     } else {
       card1.classList.add('single-card');
     }
+
     container.appendChild(slide);
     slides.push(slide);
   }
+
   updateSlider();
 }
 
@@ -355,15 +380,18 @@ function createCard(p) {
 function updateSlider() {
   document.getElementById('slides-container').style.transform = `translateX(-${slideIndex * 100}%)`;
 }
+
 function nextSlide() {
   slideIndex = (slideIndex + 1) % slides.length;
   updateSlider();
 }
+
 function prevSlide() {
   slideIndex = (slideIndex - 1 + slides.length) % slides.length;
   updateSlider();
 }
 </script>
+
 
 </body>
 </html>
