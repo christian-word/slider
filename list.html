@@ -252,7 +252,8 @@
           img.onerror = () => {
             img.src = 'https://raw.githubusercontent.com/christian-word/slider/main/4054617.png';
           };
-          img.onclick = () => openModal(`https://drive.google.com/uc?export=view&id=${p.id}`);
+          img.onclick = () => openModal(`https://drive.google.com/thumbnail?id=${p.id}&sz=w1000`);
+
 
           const nameText = document.createElement('span');
           nameText.textContent = p.name;
