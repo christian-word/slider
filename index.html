@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Именинники недели</title>
+  <title>Іменинники тижня</title>
   <style>
     body {
       margin: 0;
@@ -73,34 +73,40 @@
       background: rgba(255,255,255,0.1);
       backdrop-filter: blur(20px);
       border-radius: 20px;
-      padding: 20px;
       display: flex;
       flex-direction: column;
+      justify-content: space-between;
       align-items: center;
       box-shadow: 0 8px 32px rgba(0,0,0,0.3);
       border: 1px solid rgba(255,255,255,0.2);
+      padding: 10px;
     }
     .single-card {
       width: 60%;
     }
-    iframe {
+    .card img {
       width: 100%;
-      flex: 1;
-      border: none;
+      max-height: 75%;
+      object-fit: contain;
       border-radius: 15px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      flex-grow: 1;
     }
     .info {
+      flex-shrink: 0;
+      padding: 10px;
       text-align: center;
-      margin-top: 20px;
-      font-size: 1.5em;
+      font-size: 1.2em;
       font-weight: 600;
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      background: rgba(0, 0, 0, 0.3);
+      border-top: 1px solid rgba(255,255,255,0.2);
+      border-radius: 0 0 15px 15px;
+      width: 100%;
     }
     .info strong {
       display: block;
       margin-bottom: 5px;
-      font-size: 1.2em;
+      font-size: 1.3em;
       color: #ffd700;
     }
     .nav {
@@ -139,30 +145,30 @@
 
 <div class="loading" id="loading">
   <div style="font-size:4em">🎂</div>
-  <div class="loading-text">Загружаем именинников...</div>
-  <div>Подождите немного</div>
+  <div class="loading-text">Завантаження іменинників...</div>
+  <div>Будь ласка, зачекайте</div>
 </div>
 
 <div class="error" id="error" style="display: none;">
   <div style="font-size:4em;color:#ff6b6b">❌</div>
-  <div style="font-size:1.5em;font-weight:600;margin-bottom:10px;color:#ff6b6b">Ошибка загрузки данных</div>
-  <div id="error-message">Не удалось загрузить файл photo-database.json</div>
+  <div style="font-size:1.5em;font-weight:600;margin-bottom:10px;color:#ff6b6b">Помилка завантаження даних</div>
+  <div id="error-message">Не вдалося завантажити файл photo-database.json</div>
   <button class="retry-btn" onclick="retryLoad()">🔄 Повтор</button>
-  <button class="retry-btn" onclick="showManualUpload()">📁 Загрузить</button>
+  <button class="retry-btn" onclick="showManualUpload()">📁 Завантажити вручну</button>
 </div>
 
 <div class="upload" id="upload-area">
   <div style="font-size:4em">📁</div>
-  <div style="font-size:1.5em;font-weight:600;margin-bottom:10px;">Загрузить файл вручную</div>
-  <div>Перетащите JSON-файл с данными</div>
-  <button class="upload-btn" onclick="selectFile()">📁 Выбрать файл</button>
+  <div style="font-size:1.5em;font-weight:600;margin-bottom:10px;">Завантажити JSON-файл</div>
+  <div>Перетягніть сюди файл або натисніть кнопку</div>
+  <button class="upload-btn" onclick="selectFile()">📁 Вибрати файл</button>
 </div>
 <input type="file" id="file-input" accept=".json" style="display:none">
 
 <div class="no-birthdays" id="no-birthdays" style="display: none;">
   <div style="font-size: 3em; margin-bottom: 20px;">😔</div>
-  <div>Нет именинников на этой неделе</div>
-  <button class="retry-btn" onclick="retryLoad()">🔄 Обновить</button>
+  <div>Немає іменинників цього тижня</div>
+  <button class="retry-btn" onclick="retryLoad()">🔄 Оновити</button>
 </div>
 
 <div class="info-list" id="info-list" style="display: none;"></div>
@@ -179,19 +185,6 @@
 let slideIndex = 0, slides = [], people = [];
 
 window.addEventListener('load', loadData);
-
-if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-  window.addEventListener('DOMContentLoaded', () => {
-    const interval = setInterval(() => {
-      const checkbox = document.getElementById('fullscreen-checkbox');
-      if (checkbox) {
-        checkbox.checked = false;
-        checkbox.disabled = true;
-        clearInterval(interval);
-      }
-    }, 100);
-  });
-}
 
 function retryLoad() { loadData(); }
 
@@ -212,7 +205,6 @@ document.getElementById('upload-area').addEventListener('drop', e => {
   e.preventDefault();
   handleFile(e.dataTransfer.files[0]);
 });
-
 document.getElementById('upload-area').addEventListener('dragover', e => e.preventDefault());
 
 function handleFile(file) {
@@ -259,9 +251,7 @@ function calculateAge(birthdate) {
   const today = new Date();
   let age = today.getFullYear() - birth.getFullYear();
   const m = today.getMonth() - birth.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-    age--;
-  }
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
   return age;
 }
 
@@ -357,7 +347,7 @@ function createCard(p) {
 
   const img = document.createElement('img');
   img.className = 'fallback-image';
-  img.src = `https://drive.google.com/thumbnail?id=${p.id}&sz=w500`;
+  img.src = `https://drive.google.com/thumbnail?id=${p.id}&sz=w1200`;
   img.onerror = () => {
     img.src = 'https://raw.githubusercontent.com/christian-word/slider/main/4054617.png';
   };
@@ -391,7 +381,6 @@ function prevSlide() {
   updateSlider();
 }
 </script>
-
 
 </body>
 </html>
