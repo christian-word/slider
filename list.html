@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Іменинники по тижнях</title>
   <style>
+      <style>
     body {
       margin: 0;
       padding: 20px;
@@ -89,6 +90,7 @@
       box-shadow: 0 0 30px rgba(0,0,0,0.5);
     }
   </style>
+  </style>
 </head>
 <body>
   <h1>Іменинники по тижнях</h1>
@@ -103,11 +105,16 @@
   </div>
 
   <script>
+    const fileId = '1BsQR7Q1HfDx1u0QeHnzY8gvlac2iUYFA';
+    const apiKey = 'AIzaSyAlxAoAyke0AAkiI3akNyWLNVwtoycjkgA';
+
     async function loadData() {
       try {
         hideAll();
         document.getElementById('loading').style.display = 'block';
-        const res = await fetch('https://dl.dropboxusercontent.com/scl/fi/o2je5n0ib8v4zsjeq12ix/photo-database.json?rlkey=gm6ofx2gq2g8u8te976gwqs7d&dl=1');
+
+        const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${apiKey}`;
+        const res = await fetch(url);
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const json = await res.json();
         processData(json);
@@ -133,9 +140,7 @@
       const today = new Date();
       let age = today.getFullYear() - birthDate.getFullYear();
       const m = today.getMonth() - birthDate.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-      }
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
       return age;
     }
 
@@ -171,9 +176,7 @@
     function formatDateRange(start, end) {
       const locale = 'uk-UA';
       const options = { day: 'numeric', month: 'long' };
-      const startStr = start.toLocaleDateString(locale, options);
-      const endStr = end.toLocaleDateString(locale, options);
-      return `${startStr} – ${endStr}`;
+      return `${start.toLocaleDateString(locale, options)} – ${end.toLocaleDateString(locale, options)}`;
     }
 
     function openModal(src) {
@@ -254,7 +257,6 @@
           };
           img.onclick = () => openModal(`https://drive.google.com/thumbnail?id=${p.id}&sz=w1000`);
 
-
           const nameText = document.createElement('span');
           nameText.textContent = p.name;
 
@@ -289,4 +291,3 @@
   </script>
 </body>
 </html>
-
