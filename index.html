@@ -184,6 +184,9 @@
 <script>
 let slideIndex = 0, slides = [], people = [];
 
+const fileId = '1BsQR7Q1HfDx1u0QeHnzY8gvlac2iUYFA';
+const apiKey = 'AIzaSyAlxAoAyke0AAkiI3akNyWLNVwtoycjkgA';
+
 window.addEventListener('load', loadData);
 
 function retryLoad() { loadData(); }
@@ -237,12 +240,14 @@ async function loadData() {
   try {
     hideAll();
     document.getElementById('loading').style.display = 'block';
-    const res = await fetch('https://dl.dropboxusercontent.com/scl/fi/o2je5n0ib8v4zsjeq12ix/photo-database.json?rlkey=gm6ofx2gq2g8u8te976gwqs7d&dl=1');
+
+    const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${apiKey}`;
+    const res = await fetch(url);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
     processData(json);
   } catch (e) {
-    showError(e.message);
+    showError(e.message || 'Ошибка загрузки JSON-файла');
   }
 }
 
@@ -261,7 +266,6 @@ function processData(data) {
   const today = new Date();
   const pastWeek = new Date(today);
   pastWeek.setDate(today.getDate() - 6);
-
   today.setHours(23, 59, 59, 999);
   pastWeek.setHours(0, 0, 0, 0);
 
@@ -300,7 +304,6 @@ function processData(data) {
 function startSlideshow() {
   const fs = document.getElementById('fullscreen-checkbox');
   if (fs && fs.checked) requestFullscreen();
-
   document.getElementById('info-list').style.display = 'none';
   document.getElementById('slider').style.display = 'block';
   document.body.style.background = 'none';
@@ -382,5 +385,7 @@ function prevSlide() {
 }
 </script>
 
+
 </body>
 </html>
+
