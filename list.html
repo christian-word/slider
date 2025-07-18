@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -597,8 +596,23 @@
     <img id="modal-img" src="" alt="Фото" />
   </div>
 
+<button id="toTop" style="position:fixed;bottom:20px;right:20px;padding:10px 15px;border:none;border-radius:10px;background:#00a8cc;color:white;font-size:1.2rem;display:none;z-index:1000;box-shadow:0 5px 15px rgba(0,0,0,0.3);cursor:pointer;">↑</button>
 
   <script>
+function linkifyPhones(text) {
+  const phoneRegex = /(\+?\d[\d\s\-().]{5,}\d)/g;
+  return text.replace(phoneRegex, match => {
+    const cleaned = match.replace(/[^\d+]/g, '');
+    return `<a href="tel:${cleaned}">${match}</a>`;
+  });
+}
+window.addEventListener('scroll', () => {
+  document.getElementById('toTop').style.display = window.scrollY > 300 ? 'block' : 'none';
+});
+document.getElementById('toTop').addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
     // Создание частиц на фоне
     function createParticles() {
       const particles = document.querySelector('.particles');
@@ -792,7 +806,7 @@
             <div>Дата народження: ${birthDateStr}</div>
             <div>Рік: ${birthYear}</div>
             <div>Вік: ${person.age} років</div>
-            ${person.phone ? `<div>Телефон: ${person.phone}</div>` : ''}
+            ${person.phone ? `<div>Телефон: ${linkifyPhones(person.phone)}</div>` : ''}
           `;
           
           info.appendChild(name);
