@@ -1,391 +1,933 @@
+
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
-  <meta charset="UTF-8">
-  <title>Іменинники тижня</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Іменинники</title>
   <style>
-    body {
+    * {
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #fff;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #43e97b 100%);
       min-height: 100vh;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      color: #ffffff;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      opacity: 0;
+      animation: fadeInUp 1s ease-out forwards;
+      margin-bottom: 0.5rem;
+    }
+    
+    .subtitle {
+      font-size: 1.2rem;
+      color: rgba(255, 255, 255, 0.8);
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      opacity: 0;
+      animation: fadeInUp 1s ease-out 0.2s forwards;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .filters {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      opacity: 0;
+      animation: fadeInUp 1s ease-out 0.2s forwards;
+    }
+    
+    .filter-group {
+      position: relative;
+    }
+    
+    .filter-group label {
+      display: block;
+      font-weight: 600;
+      color: #4a5568;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    input[type="text"], select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      background: #ffffff;
+      color: #2d3748;
+    }
+    
+    input[type="text"]:focus, select:focus {
+      outline: none;
+      border-color: #00f2fe;
+      box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.1);
+      transform: translateY(-2px);
+    }
+    
+    .stats {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 1.5rem;
+      border-radius: 16px;
+      margin-bottom: 2rem;
+      text-align: center;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #4a5568;
+      opacity: 0;
+      animation: fadeInUp 1s ease-out 0.4s forwards;
+    }
+    
+    .stats strong {
+      color: #00a8cc;
+      font-weight: 700;
+    }
+    
+    .month-group {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: slideInUp 0.6s ease-out forwards;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .month-group::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #4facfe, #00f2fe, #43e97b);
+    }
+    
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .month-group h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: #00a8cc;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .month-group h2::before {
+      content: "🎂";
+      font-size: 1.5rem;
+    }
+    
+    .person-card {
+      display: flex;
+      align-items: center;
+      padding: 1.5rem;
+      border-radius: 16px;
+      margin-bottom: 1rem;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+      background: #ffffff;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .person-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 242, 254, 0.1), transparent);
+      transition: left 0.5s ease;
+    }
+    
+    .person-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+      border-color: #00f2fe;
+    }
+    
+    .person-card:hover::before {
+      left: 100%;
+    }
+    
+    .person-photo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 1.5rem;
+      cursor: pointer;
+      border: 3px solid #ffffff;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    
+    .person-photo:hover {
+      transform: scale(1.1);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    }
+    
+    .person-photo.no-photo {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-direction: column;
-    }
-    .loading, .error, .upload, .no-birthdays, .info-list {
-      text-align: center;
-      padding: 30px;
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      max-width: 800px;
-      margin: 20px;
-    }
-    .upload {
-      display: none;
-      border: 3px dashed rgba(255,255,255,0.3);
-      cursor: pointer;
-    }
-    .upload-btn, .retry-btn, .btn {
-      background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-      border: none;
       color: white;
-      padding: 15px 40px;
-      font-size: 1.1em;
-      border-radius: 50px;
-      cursor: pointer;
-      transition: all 0.3s ease;
+      font-size: 0.8rem;
+      text-align: center;
       font-weight: 600;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      margin: 10px;
     }
-    .slider {
+    
+    .person-info {
+      flex: 1;
+      position: relative;
+    }
+    
+    .person-name {
+      font-weight: 700;
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
+      color: #2d3748;
+    }
+    
+    .person-details {
+      color: #718096;
+      font-size: 0.95rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.5rem;
+    }
+    
+    .person-details div {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .person-details div::before {
+      content: "📅";
+      font-size: 0.9rem;
+    }
+    
+    .person-details div:nth-child(2)::before {
+      content: "🎯";
+    }
+    
+    .person-details div:nth-child(3)::before {
+      content: "⏰";
+    }
+    
+    .person-details div:nth-child(4)::before {
+      content: "📞";
+    }
+    
+    .loading, .error {
+      text-align: center;
+      padding: 3rem;
+      font-size: 1.2rem;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      margin: 2rem 0;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+    
+    .loading {
+      color: #00a8cc;
+      position: relative;
+    }
+    
+    .loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 30px;
+      height: 30px;
+      margin: -15px 0 0 -15px;
+      border: 3px solid rgba(0, 168, 204, 0.3);
+      border-top: 3px solid #00a8cc;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .error {
+      color: #e53e3e;
+      background: rgba(254, 178, 178, 0.9);
+      border: 2px solid #feb2b2;
+    }
+    
+    .no-results {
+      text-align: center;
+      padding: 3rem;
+      color: #a0aec0;
+      font-style: italic;
+      font-size: 1.2rem;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+    
+    /* Модальное окно */
+    #modal {
       display: none;
-      overflow: hidden;
+      position: fixed;
+      z-index: 9999;
+      left: 0;
+      top: 0;
       width: 100vw;
       height: 100vh;
+      background-color: rgba(0,0,0,0.9);
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(5px);
+    }
+    
+    #modal img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 20px;
+      box-shadow: 0 0 50px rgba(0,0,0,0.5);
+      animation: modalZoom 0.3s ease-out;
+    }
+    
+    @keyframes modalZoom {
+      from {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    
+    .close-modal {
+      position: absolute;
+      top: 2rem;
+      right: 2rem;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+    
+    .close-modal:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 0.5rem;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+      }
+      
+      .subtitle {
+        font-size: 1rem;
+      }
+      
+      .filters {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+      
+      .stats {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+      }
+      
+      .person-card {
+        flex-direction: row;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        align-items: flex-start;
+      }
+      
+      .person-photo {
+        width: 60px;
+        height: 60px;
+        margin-right: 1rem;
+        margin-bottom: 0;
+        flex-shrink: 0;
+      }
+      
+      .person-info {
+        flex: 1;
+        min-width: 0;
+      }
+      
+      .person-name {
+        font-size: 1.1rem;
+        margin-bottom: 0.3rem;
+      }
+      
+      .person-details {
+        grid-template-columns: 1fr;
+        gap: 0.2rem;
+        font-size: 0.85rem;
+      }
+      
+      .person-details div {
+        gap: 0.3rem;
+      }
+      
+      .person-details div::before {
+        font-size: 0.8rem;
+        flex-shrink: 0;
+      }
+      
+      .month-group {
+        padding: 1rem;
+        margin-bottom: 1rem;
+      }
+      
+      .month-group h2 {
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+      }
+    }
+    
+    /* Анимация появления карточек */
+    .person-card {
+      animation: fadeInCard 0.6s ease-out forwards;
+    }
+    
+    @keyframes fadeInCard {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Стили для скрытых элементов */
+    .hidden {
+      display: none;
+    }
+    
+    /* Градиентные акценты */
+    .gradient-text {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #43e97b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    /* Плавающие частицы на фоне */
+    .particles {
       position: fixed;
       top: 0;
       left: 0;
-      background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-    }
-    .slides-container {
-      display: flex;
       width: 100%;
       height: 100%;
-      transition: transform 0.8s ease;
-    }
-    .slide {
-      min-width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      flex-shrink: 0;
-      padding: 20px;
-    }
-    .card {
-      width: 48%;
-      height: 90%;
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(20px);
-      border-radius: 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-      border: 1px solid rgba(255,255,255,0.2);
-      padding: 10px;
-    }
-    .single-card {
-      width: 60%;
-    }
-    .card img {
-      width: 100%;
-      max-height: 75%;
-      object-fit: contain;
-      border-radius: 15px;
-      flex-grow: 1;
-    }
-    .info {
-      flex-shrink: 0;
-      padding: 10px;
-      text-align: center;
-      font-size: 1.2em;
-      font-weight: 600;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-      background: rgba(0, 0, 0, 0.3);
-      border-top: 1px solid rgba(255,255,255,0.2);
-      border-radius: 0 0 15px 15px;
-      width: 100%;
-    }
-    .info strong {
-      display: block;
-      margin-bottom: 5px;
-      font-size: 1.3em;
-      color: #ffd700;
-    }
-    .nav {
-      position: absolute;
-      top: 50%;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      transform: translateY(-50%);
       pointer-events: none;
-      padding: 0 30px;
-      z-index: 10;
+      z-index: -1;
     }
-    .btn {
-      background: rgba(255,255,255,0.2);
-      backdrop-filter: blur(10px);
-      border: none;
-      color: white;
-      font-size: 2em;
-      padding: 20px 25px;
-      cursor: pointer;
-      pointer-events: auto;
+    
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.3);
       border-radius: 50%;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      border: 1px solid rgba(255,255,255,0.3);
+      animation: float 15s infinite linear;
     }
-    .btn:hover {
-      background: rgba(255,255,255,0.3);
-      transform: scale(1.1);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    
+    @keyframes float {
+      0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100vh) rotate(360deg);
+        opacity: 0;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="particles"></div>
+  
+  <div class="container">
+    <div class="header">
+      <h1>🎉 Іменинники</h1>
+      <div class="subtitle">Церква ЄХБ 'Дім Євангелія',.</div>
+      <div class="subtitle">м.Суми, © 2025р.</div>
+    </div>
+    
+    <div id="todayList" class="month-group hidden">
+      <h3>🎁 Іменинники сьогодні</h3>
+      <div id="todayCards"></div>
+    </div>   
+ 
+    <div class="filters">
+      <div class="filter-group">
+        <label for="search">Пошук</label>
+        <input type="text" id="search" placeholder="Введіть ім'я для пошуку...">
+      </div>
+      
+      <div class="filter-group">
+        <label for="monthFilter">Місяць</label>
+        <select id="monthFilter">
+          <option value="">Всі місяці</option>
+          <option value="0">Січень</option>
+          <option value="1">Лютий</option>
+          <option value="2">Березень</option>
+          <option value="3">Квітень</option>
+          <option value="4">Травень</option>
+          <option value="5">Червень</option>
+          <option value="6">Липень</option>
+          <option value="7">Серпень</option>
+          <option value="8">Вересень</option>
+          <option value="9">Жовтень</option>
+          <option value="10">Листопад</option>
+          <option value="11">Грудень</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="photoFilter">Фото</label>
+        <select id="photoFilter">
+          <option value="">Всі</option>
+          <option value="with">З фото</option>
+          <option value="without">Без фото</option>
+        </select>
+      </div>
+    </div>
+    
+    <div id="stats" class="stats"></div>
+    <div id="loading" class="loading">Завантаження даних...</div>
+    <div id="error" class="error hidden"></div>
+    <div id="list"></div>
+  </div>
+  
+  <!-- Модальное окно -->
+  <div id="modal">
+    <button class="close-modal">&times;</button>
+    <img id="modal-img" src="" alt="Фото" />
+  </div>
 
-<div class="loading" id="loading">
-  <div style="font-size:4em">🎂</div>
-  <div class="loading-text">Завантаження іменинників...</div>
-  <div>Будь ласка, зачекайте</div>
-</div>
+<button id="toTop" style="position:fixed;bottom:20px;right:20px;padding:10px 15px;border:none;border-radius:10px;background:#00a8cc;color:white;font-size:1.2rem;display:none;z-index:1000;box-shadow:0 5px 15px rgba(0,0,0,0.3);cursor:pointer;">↑</button>
 
-<div class="error" id="error" style="display: none;">
-  <div style="font-size:4em;color:#ff6b6b">❌</div>
-  <div style="font-size:1.5em;font-weight:600;margin-bottom:10px;color:#ff6b6b">Помилка завантаження даних</div>
-  <div id="error-message">Не вдалося завантажити файл photo-database.json</div>
-  <button class="retry-btn" onclick="retryLoad()">🔄 Повтор</button>
-  <button class="retry-btn" onclick="showManualUpload()">📁 Завантажити вручну</button>
-</div>
-
-<div class="upload" id="upload-area">
-  <div style="font-size:4em">📁</div>
-  <div style="font-size:1.5em;font-weight:600;margin-bottom:10px;">Завантажити JSON-файл</div>
-  <div>Перетягніть сюди файл або натисніть кнопку</div>
-  <button class="upload-btn" onclick="selectFile()">📁 Вибрати файл</button>
-</div>
-<input type="file" id="file-input" accept=".json" style="display:none">
-
-<div class="no-birthdays" id="no-birthdays" style="display: none;">
-  <div style="font-size: 3em; margin-bottom: 20px;">😔</div>
-  <div>Немає іменинників цього тижня</div>
-  <button class="retry-btn" onclick="retryLoad()">🔄 Оновити</button>
-</div>
-
-<div class="info-list" id="info-list" style="display: none;"></div>
-
-<div class="slider" id="slider">
-  <div class="slides-container" id="slides-container"></div>
-</div>
-<div class="nav">
-  <button class="btn" onclick="prevSlide()">❮</button>
-  <button class="btn" onclick="nextSlide()">❯</button>
-</div>
-
-<script>
-let slideIndex = 0, slides = [], people = [];
-
-const fileId = '1BsQR7Q1HfDx1u0QeHnzY8gvlac2iUYFA';
-const apiKey = 'AIzaSyAlxAoAyke0AAkiI3akNyWLNVwtoycjkgA';
-
-window.addEventListener('load', loadData);
-
-function retryLoad() { loadData(); }
-
-function showManualUpload() {
-  hideAll();
-  document.getElementById('upload-area').style.display = 'block';
+  <script>
+function linkifyPhones(text) {
+  const phoneRegex = /(\+?\d[\d\s\-().]{5,}\d)/g;
+  return text.replace(phoneRegex, match => {
+    const cleaned = match.replace(/[^\d+]/g, '');
+    return `<a href="tel:${cleaned}">${match}</a>`;
+  });
 }
-
-function selectFile() {
-  document.getElementById('file-input').click();
-}
-
-document.getElementById('file-input').addEventListener('change', e => {
-  if (e.target.files.length) handleFile(e.target.files[0]);
+window.addEventListener('scroll', () => {
+  document.getElementById('toTop').style.display = window.scrollY > 300 ? 'block' : 'none';
+});
+document.getElementById('toTop').addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-document.getElementById('upload-area').addEventListener('drop', e => {
-  e.preventDefault();
-  handleFile(e.dataTransfer.files[0]);
-});
-document.getElementById('upload-area').addEventListener('dragover', e => e.preventDefault());
-
-function handleFile(file) {
-  if (!file.name.endsWith('.json')) return alert('Файл має бути у форматі .json');
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const json = JSON.parse(e.target.result);
-      processData(json);
-    } catch {
-      showError('Помилка читання JSON-файлу');
+    // Создание частиц на фоне
+    function createParticles() {
+      const particles = document.querySelector('.particles');
+      for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 15 + 's';
+        particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+        particles.appendChild(particle);
+      }
     }
-  };
-  reader.readAsText(file);
-}
+    
+    const fileId = '1BsQR7Q1HfDx1u0QeHnzY8gvlac2iUYFA';
+    const apiKey = 'AIzaSyAlxAoAyke0AAkiI3akNyWLNVwtoycjkgA';
+    
+    let allPeople = [];
+    let filteredPeople = [];
+    
+    const monthNames = [
+      'Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень',
+      'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'
+    ];
 
-function hideAll() {
-  ['loading', 'error', 'upload-area', 'slider', 'no-birthdays', 'info-list'].forEach(id => {
-    document.getElementById(id).style.display = 'none';
-  });
-}
+    async function loadData() {
+      try {
+        hideAll();
+        document.getElementById('loading').classList.remove('hidden');
 
-function showError(msg) {
+        const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${apiKey}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const json = await res.json();
+        
+        allPeople = json.entries.map(person => {
+          const birthDate = new Date(person.birthdate);
+          const age = calculateAge(birthDate);
+          
+          return {
+            name: person.lastname,
+            birthDate: birthDate,
+            age: age,
+            phone: person.phone || '',
+            id: person.id || '',
+            hasPhoto: !!(person.id && person.id.trim())
+          };
+        });
+        
+        filteredPeople = [...allPeople];
+        renderData();
+        
+      } catch (e) {
+        showError(e.message);
+      }
+    }
+
+    function hideAll() {
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('error').classList.add('hidden');
+      document.getElementById('list').innerHTML = '';
+      document.getElementById('stats').innerHTML = '';
+    }
+
+    function showError(msg) {
+      hideAll();
+      const err = document.getElementById('error');
+      err.textContent = 'Помилка завантаження: ' + msg;
+      err.classList.remove('hidden');
+    }
+
+    function calculateAge(birthDate) {
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+      return age;
+    }
+
+    function openModal(src) {
+      const modal = document.getElementById('modal');
+      const img = document.getElementById('modal-img');
+      img.src = src;
+      modal.style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+
+    function applyFilters() {
+      const searchTerm = document.getElementById('search').value.toLowerCase();
+      const monthFilter = document.getElementById('monthFilter').value;
+      const photoFilter = document.getElementById('photoFilter').value;
+      
+      filteredPeople = allPeople.filter(person => {
+        const matchesSearch = person.name.toLowerCase().includes(searchTerm);
+        const matchesMonth = monthFilter === '' || person.birthDate.getMonth() === parseInt(monthFilter);
+        
+        let matchesPhoto = true;
+        if (photoFilter === 'with') {
+          matchesPhoto = person.hasPhoto;
+        } else if (photoFilter === 'without') {
+          matchesPhoto = !person.hasPhoto;
+        }
+        
+        return matchesSearch && matchesMonth && matchesPhoto;
+      });
+      
+      renderData();
+    }
+
+function renderData() {
   hideAll();
-  document.getElementById('error-message').textContent = msg;
-  document.getElementById('error').style.display = 'block';
-}
 
-async function loadData() {
-  try {
-    hideAll();
-    document.getElementById('loading').style.display = 'block';
+  const stats = document.getElementById('stats');
+  const withPhoto = filteredPeople.filter(p => p.hasPhoto).length;
+  const withoutPhoto = filteredPeople.filter(p => !p.hasPhoto).length;
 
-    const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${apiKey}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    processData(json);
-  } catch (e) {
-    showError(e.message || 'Ошибка загрузки JSON-файла');
-  }
-}
+  stats.innerHTML = `
+    <strong>Всього: ${filteredPeople.length}</strong> | 
+    З фото: ${withPhoto} | 
+    Без фото: ${withoutPhoto}
+  `;
 
-function calculateAge(birthdate) {
-  const birth = new Date(birthdate);
-  const today = new Date();
-  let age = today.getFullYear() - birth.getFullYear();
-  const m = today.getMonth() - birth.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-  return age;
-}
-
-function processData(data) {
-  if (!Array.isArray(data.entries)) return showError('Відсутній масив entries у JSON');
-
-  const today = new Date();
-  const pastWeek = new Date(today);
-  pastWeek.setDate(today.getDate() - 6);
-  today.setHours(23, 59, 59, 999);
-  pastWeek.setHours(0, 0, 0, 0);
-
-  people = data.entries.filter(p => {
-    if (!p.birthdate) return false;
-    const [y, m, d] = p.birthdate.trim().split('-');
-    const b = new Date(today.getFullYear(), parseInt(m) - 1, parseInt(d));
-    return b >= pastWeek && b <= today;
-  });
-
-  if (!people.length) {
-    hideAll();
-    document.getElementById('no-birthdays').style.display = 'block';
+  if (filteredPeople.length === 0) {
+    document.getElementById('list').innerHTML = '<div class="no-results">🔍 Нічого не знайдено</div>';
     return;
   }
 
-  const infoBlock = document.getElementById('info-list');
-  infoBlock.innerHTML = `<h2>Знайдено ${people.length} осіб:</h2>` +
-    '<ul style="list-style:none;padding:0">' +
-    people.map(p => {
-      const [y, m, d] = p.birthdate.trim().split('-');
-      const birth = new Date(today.getFullYear(), parseInt(m) - 1, parseInt(d));
-      const age = calculateAge(p.birthdate);
-      return `<li style="margin:10px 0">${p.lastname}, ${birth.toLocaleDateString('uk-UA')} — ${age} років</li>`;
-    }).join('') + '</ul>' +
-    `<label style="display:block;margin:20px 0;font-size:1em;">
-       <input type="checkbox" id="fullscreen-checkbox" style="transform:scale(1.5);margin-right:10px;" checked>
-       Запустити в повноекранному режимі
-     </label>` +
-    '<button class="retry-btn" onclick="startSlideshow()">▶️ Почати показ</button>';
+  const today = new Date();
+  const todayPeople = filteredPeople.filter(p =>
+    p.birthDate.getDate() === today.getDate() &&
+    p.birthDate.getMonth() === today.getMonth()
+  );
 
-  hideAll();
-  infoBlock.style.display = 'block';
-}
+  const todayBlock = document.getElementById('todayList');
+  const todayCards = document.getElementById('todayCards');
+  todayCards.innerHTML = '';
 
-function startSlideshow() {
-  const fs = document.getElementById('fullscreen-checkbox');
-  if (fs && fs.checked) requestFullscreen();
-  document.getElementById('info-list').style.display = 'none';
-  document.getElementById('slider').style.display = 'block';
-  document.body.style.background = 'none';
-  buildSlides();
-}
+  if (todayPeople.length > 0) {
+    todayBlock.classList.remove('hidden');
 
-function requestFullscreen() {
-  const el = document.documentElement;
-  if (el.requestFullscreen) el.requestFullscreen();
-  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-  else if (el.msRequestFullscreen) el.msRequestFullscreen();
-}
+    todayPeople.forEach((person, index) => {
+      const card = document.createElement('div');
+      card.className = 'person-card';
+      card.style.animationDelay = (index * 0.05) + 's';
+      card.style.background = '#fff3cd';
+      card.style.borderColor = '#ff9900';
+      card.style.boxShadow = '0 0 15px rgba(255, 153, 0, 0.6)';
 
-function buildSlides() {
-  const container = document.getElementById('slides-container');
-  container.innerHTML = '';
-  slides = [];
-  slideIndex = 0;
+      const photo = document.createElement('div');
+      if (person.hasPhoto) {
+        const img = document.createElement('img');
+        img.src = `https://drive.google.com/thumbnail?id=${person.id}&sz=w200`;
+        img.alt = person.name;
+        img.className = 'person-photo';
+        img.onerror = () => {
+          img.src = 'https://raw.githubusercontent.com/christian-word/slider/main/4054617.png';
+        };
+        img.onclick = () => openModal(`https://drive.google.com/thumbnail?id=${person.id}&sz=w1000`);
+        photo.appendChild(img);
+      } else {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'person-photo no-photo';
+        placeholder.textContent = 'Немає фото';
+        photo.appendChild(placeholder);
+      }
 
-  for (let i = 0; i < people.length; i += 2) {
-    const slide = document.createElement('div');
-    slide.className = 'slide';
+      const info = document.createElement('div');
+      info.className = 'person-info';
 
-    const card1 = createCard(people[i]);
-    slide.appendChild(card1);
+      const name = document.createElement('div');
+      name.className = 'person-name';
+      name.textContent = person.name;
 
-    const person2 = people[i + 1];
-    if (person2) {
-      slide.appendChild(createCard(person2));
-    } else {
-      card1.classList.add('single-card');
-    }
+      const details = document.createElement('div');
+      details.className = 'person-details';
 
-    container.appendChild(slide);
-    slides.push(slide);
+      const birthDateStr = person.birthDate.toLocaleDateString('uk-UA');
+      const birthYear = person.birthDate.getFullYear();
+
+      details.innerHTML = `
+        <div>Дата народження: ${birthDateStr}</div>
+        <div>Рік: ${birthYear}</div>
+        <div>Вік: ${person.age} років</div>
+        ${person.phone ? `<div>Телефон: ${linkifyPhones(person.phone)}</div>` : ''}
+      `;
+
+      info.appendChild(name);
+      info.appendChild(details);
+      card.appendChild(photo);
+      card.appendChild(info);
+      todayCards.appendChild(card);
+    });
+
+  } else {
+    todayBlock.classList.add('hidden');
   }
 
-  updateSlider();
+  const peopleByMonth = {};
+  filteredPeople.forEach(person => {
+    const month = person.birthDate.getMonth();
+    if (!peopleByMonth[month]) {
+      peopleByMonth[month] = [];
+    }
+    peopleByMonth[month].push(person);
+  });
+
+  Object.keys(peopleByMonth).forEach(month => {
+    peopleByMonth[month].sort((a, b) => a.birthDate.getDate() - b.birthDate.getDate());
+  });
+
+  const container = document.getElementById('list');
+  container.innerHTML = '';
+
+  Object.keys(peopleByMonth).sort((a, b) => a - b).forEach((month, index) => {
+    const monthGroup = document.createElement('div');
+    monthGroup.className = 'month-group';
+    monthGroup.style.animationDelay = (index * 0.1) + 's';
+
+    const title = document.createElement('h2');
+    title.textContent = `${monthNames[month]} (${peopleByMonth[month].length})`;
+    monthGroup.appendChild(title);
+
+    peopleByMonth[month].forEach((person, personIndex) => {
+      const card = document.createElement('div');
+      const isToday = (() => {
+        const today = new Date();
+        return person.birthDate.getDate() === today.getDate() &&
+               person.birthDate.getMonth() === today.getMonth();
+      })();
+      if (isToday) {
+        card.style.background = '#fff3cd';
+        card.style.borderColor = '#ff9900';
+        card.style.boxShadow = '0 0 15px rgba(255, 153, 0, 0.6)';
+      }
+
+      card.className = 'person-card';
+      card.style.animationDelay = (index * 0.1 + personIndex * 0.05) + 's';
+
+      const photo = document.createElement('div');
+      if (person.hasPhoto) {
+        const img = document.createElement('img');
+        img.src = `https://drive.google.com/thumbnail?id=${person.id}&sz=w200`;
+        img.alt = person.name;
+        img.className = 'person-photo';
+        img.onerror = () => {
+          img.src = 'https://raw.githubusercontent.com/christian-word/slider/main/4054617.png';
+        };
+        img.onclick = () => openModal(`https://drive.google.com/thumbnail?id=${person.id}&sz=w1000`);
+        photo.appendChild(img);
+      } else {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'person-photo no-photo';
+        placeholder.textContent = 'Немає фото';
+        photo.appendChild(placeholder);
+      }
+
+      const info = document.createElement('div');
+      info.className = 'person-info';
+
+      const name = document.createElement('div');
+      name.className = 'person-name';
+      name.textContent = person.name;
+
+      const details = document.createElement('div');
+      details.className = 'person-details';
+
+      const birthDateStr = person.birthDate.toLocaleDateString('uk-UA');
+      const birthYear = person.birthDate.getFullYear();
+
+      details.innerHTML = `
+        <div>Дата народження: ${birthDateStr}</div>
+        <div>Рік: ${birthYear}</div>
+        <div>Вік: ${person.age} років</div>
+        ${person.phone ? `<div>Телефон: ${linkifyPhones(person.phone)}</div>` : ''}
+      `;
+
+      info.appendChild(name);
+      info.appendChild(details);
+      card.appendChild(photo);
+      card.appendChild(info);
+      monthGroup.appendChild(card);
+    });
+
+    container.appendChild(monthGroup);
+  });
 }
 
-function createCard(p) {
-  const card = document.createElement('div');
-  card.className = 'card';
 
-  const img = document.createElement('img');
-  img.className = 'fallback-image';
-  img.src = `https://drive.google.com/thumbnail?id=${p.id}&sz=w1200`;
-  img.onerror = () => {
-    img.src = 'https://raw.githubusercontent.com/christian-word/slider/main/4054617.png';
-  };
+    // Обработчики событий
+    document.getElementById('search').addEventListener('input', applyFilters);
+    document.getElementById('monthFilter').addEventListener('change', applyFilters);
+    document.getElementById('photoFilter').addEventListener('change', applyFilters);
+    
+    // Закрытие модального окна
+    document.getElementById('modal').addEventListener('click', (e) => {
+      if (e.target.id === 'modal') closeModal();
+    });
+    document.querySelector('.close-modal').addEventListener('click', closeModal);
+    
+    // Закрытие модального окна по Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
 
-  card.appendChild(img);
-
-  const info = document.createElement('div');
-  info.className = 'info';
-  const age = calculateAge(p.birthdate);
-  info.innerHTML = `
-    <strong>${p.lastname}</strong>
-    <div>${new Date(p.birthdate).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-    <div>${age} років</div>
-  `;
-  card.appendChild(info);
-
-  return card;
-}
-
-function updateSlider() {
-  document.getElementById('slides-container').style.transform = `translateX(-${slideIndex * 100}%)`;
-}
-
-function nextSlide() {
-  slideIndex = (slideIndex + 1) % slides.length;
-  updateSlider();
-}
-
-function prevSlide() {
-  slideIndex = (slideIndex - 1 + slides.length) % slides.length;
-  updateSlider();
-}
-</script>
-
-
+    // Инициализация
+    createParticles();
+    loadData();
+  </script>
 </body>
 </html>
-
