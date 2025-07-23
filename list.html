@@ -1,9 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="uk">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-   <meta property="og:image" content="https://raw.githubusercontent.com/christian-word/slider/main/book.jpg" />
   <title>Іменинники</title>
   <style>
     * {
@@ -550,6 +550,11 @@
       <div class="subtitle">м.Суми, © 2025р.</div>
     </div>
     
+    <div id="todayList" class="month-group hidden">
+      <h3>🎁 Іменинники сьогодні</h3>
+      <div id="todayCards"></div>
+    </div>   
+ 
     <div class="filters">
       <div class="filter-group">
         <label for="search">Пошук</label>
@@ -725,102 +730,184 @@ document.getElementById('toTop').addEventListener('click', () => {
       renderData();
     }
 
-    function renderData() {
-      hideAll();
-      
-      const stats = document.getElementById('stats');
-      const withPhoto = filteredPeople.filter(p => p.hasPhoto).length;
-      const withoutPhoto = filteredPeople.filter(p => !p.hasPhoto).length;
-      
-      stats.innerHTML = `
-        <strong>Всього: ${filteredPeople.length}</strong> | 
-        З фото: ${withPhoto} | 
-        Без фото: ${withoutPhoto}
-      `;
-      
-      if (filteredPeople.length === 0) {
-        document.getElementById('list').innerHTML = '<div class="no-results">🔍 Нічого не знайдено</div>';
-        return;
+function renderData() {
+  hideAll();
+
+  const stats = document.getElementById('stats');
+  const withPhoto = filteredPeople.filter(p => p.hasPhoto).length;
+  const withoutPhoto = filteredPeople.filter(p => !p.hasPhoto).length;
+
+  stats.innerHTML = `
+    <strong>Всього: ${filteredPeople.length}</strong> | 
+    З фото: ${withPhoto} | 
+    Без фото: ${withoutPhoto}
+  `;
+
+  if (filteredPeople.length === 0) {
+    document.getElementById('list').innerHTML = '<div class="no-results">🔍 Нічого не знайдено</div>';
+    return;
+  }
+
+  const today = new Date();
+  const todayPeople = filteredPeople.filter(p =>
+    p.birthDate.getDate() === today.getDate() &&
+    p.birthDate.getMonth() === today.getMonth()
+  );
+
+  const todayBlock = document.getElementById('todayList');
+  const todayCards = document.getElementById('todayCards');
+  todayCards.innerHTML = '';
+
+  if (todayPeople.length > 0) {
+    todayBlock.classList.remove('hidden');
+
+    todayPeople.forEach((person, index) => {
+      const card = document.createElement('div');
+      card.className = 'person-card';
+      card.style.animationDelay = (index * 0.05) + 's';
+      card.style.background = '#fff3cd';
+      card.style.borderColor = '#ff9900';
+      card.style.boxShadow = '0 0 15px rgba(255, 153, 0, 0.6)';
+
+      const photo = document.createElement('div');
+      if (person.hasPhoto) {
+        const img = document.createElement('img');
+        img.src = `https://drive.google.com/thumbnail?id=${person.id}&sz=w200`;
+        img.alt = person.name;
+        img.className = 'person-photo';
+        img.onerror = () => {
+          img.src = 'https://raw.githubusercontent.com/christian-word/slider/main/4054617.png';
+        };
+        img.onclick = () => openModal(`https://drive.google.com/thumbnail?id=${person.id}&sz=w1000`);
+        photo.appendChild(img);
+      } else {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'person-photo no-photo';
+        placeholder.textContent = 'Немає фото';
+        photo.appendChild(placeholder);
       }
-      
-      const peopleByMonth = {};
-      filteredPeople.forEach(person => {
-        const month = person.birthDate.getMonth();
-        if (!peopleByMonth[month]) {
-          peopleByMonth[month] = [];
-        }
-        peopleByMonth[month].push(person);
-      });
-      
-      Object.keys(peopleByMonth).forEach(month => {
-        peopleByMonth[month].sort((a, b) => a.birthDate.getDate() - b.birthDate.getDate());
-      });
-      
-      const container = document.getElementById('list');
-      
-      Object.keys(peopleByMonth).sort((a, b) => a - b).forEach((month, index) => {
-        const monthGroup = document.createElement('div');
-        monthGroup.className = 'month-group';
-        monthGroup.style.animationDelay = (index * 0.1) + 's';
-        
-        const title = document.createElement('h2');
-        title.textContent = `${monthNames[month]} (${peopleByMonth[month].length})`;
-        monthGroup.appendChild(title);
-        
-        peopleByMonth[month].forEach((person, personIndex) => {
-          const card = document.createElement('div');
-          card.className = 'person-card';
-          card.style.animationDelay = (index * 0.1 + personIndex * 0.05) + 's';
-          
-          const photo = document.createElement('div');
-          if (person.hasPhoto) {
-            const img = document.createElement('img');
-            img.src = `https://drive.google.com/thumbnail?id=${person.id}&sz=w200`;
-            img.alt = person.name;
-            img.className = 'person-photo';
-            img.onerror = () => {
-              img.src = 'https://raw.githubusercontent.com/christian-word/slider/main/4054617.png';
-            };
-            img.onclick = () => openModal(`https://drive.google.com/thumbnail?id=${person.id}&sz=w1000`);
-            photo.appendChild(img);
-          } else {
-            const placeholder = document.createElement('div');
-            placeholder.className = 'person-photo no-photo';
-            placeholder.textContent = 'Немає фото';
-            photo.appendChild(placeholder);
-          }
-          
-          const info = document.createElement('div');
-          info.className = 'person-info';
-          
-          const name = document.createElement('div');
-          name.className = 'person-name';
-          name.textContent = person.name;
-          
-          const details = document.createElement('div');
-          details.className = 'person-details';
-          
-          const birthDateStr = person.birthDate.toLocaleDateString('uk-UA');
-          const birthYear = person.birthDate.getFullYear();
-          
-          details.innerHTML = `
-            <div>Дата народження: ${birthDateStr}</div>
-            <div>Рік: ${birthYear}</div>
-            <div>Вік: ${person.age} років</div>
-            ${person.phone ? `<div>Телефон: ${linkifyPhones(person.phone)}</div>` : ''}
-          `;
-          
-          info.appendChild(name);
-          info.appendChild(details);
-          
-          card.appendChild(photo);
-          card.appendChild(info);
-          monthGroup.appendChild(card);
-        });
-        
-        container.appendChild(monthGroup);
-      });
+
+      const info = document.createElement('div');
+      info.className = 'person-info';
+
+      const name = document.createElement('div');
+      name.className = 'person-name';
+      name.textContent = person.name;
+
+      const details = document.createElement('div');
+      details.className = 'person-details';
+
+      const birthDateStr = person.birthDate.toLocaleDateString('uk-UA');
+      const birthYear = person.birthDate.getFullYear();
+
+      details.innerHTML = `
+        <div>Дата народження: ${birthDateStr}</div>
+        <div>Рік: ${birthYear}</div>
+        <div>Вік: ${person.age} років</div>
+        ${person.phone ? `<div>Телефон: ${linkifyPhones(person.phone)}</div>` : ''}
+      `;
+
+      info.appendChild(name);
+      info.appendChild(details);
+      card.appendChild(photo);
+      card.appendChild(info);
+      todayCards.appendChild(card);
+    });
+
+  } else {
+    todayBlock.classList.add('hidden');
+  }
+
+  const peopleByMonth = {};
+  filteredPeople.forEach(person => {
+    const month = person.birthDate.getMonth();
+    if (!peopleByMonth[month]) {
+      peopleByMonth[month] = [];
     }
+    peopleByMonth[month].push(person);
+  });
+
+  Object.keys(peopleByMonth).forEach(month => {
+    peopleByMonth[month].sort((a, b) => a.birthDate.getDate() - b.birthDate.getDate());
+  });
+
+  const container = document.getElementById('list');
+  container.innerHTML = '';
+
+  Object.keys(peopleByMonth).sort((a, b) => a - b).forEach((month, index) => {
+    const monthGroup = document.createElement('div');
+    monthGroup.className = 'month-group';
+    monthGroup.style.animationDelay = (index * 0.1) + 's';
+
+    const title = document.createElement('h2');
+    title.textContent = `${monthNames[month]} (${peopleByMonth[month].length})`;
+    monthGroup.appendChild(title);
+
+    peopleByMonth[month].forEach((person, personIndex) => {
+      const card = document.createElement('div');
+      const isToday = (() => {
+        const today = new Date();
+        return person.birthDate.getDate() === today.getDate() &&
+               person.birthDate.getMonth() === today.getMonth();
+      })();
+      if (isToday) {
+        card.style.background = '#fff3cd';
+        card.style.borderColor = '#ff9900';
+        card.style.boxShadow = '0 0 15px rgba(255, 153, 0, 0.6)';
+      }
+
+      card.className = 'person-card';
+      card.style.animationDelay = (index * 0.1 + personIndex * 0.05) + 's';
+
+      const photo = document.createElement('div');
+      if (person.hasPhoto) {
+        const img = document.createElement('img');
+        img.src = `https://drive.google.com/thumbnail?id=${person.id}&sz=w200`;
+        img.alt = person.name;
+        img.className = 'person-photo';
+        img.onerror = () => {
+          img.src = 'https://raw.githubusercontent.com/christian-word/slider/main/4054617.png';
+        };
+        img.onclick = () => openModal(`https://drive.google.com/thumbnail?id=${person.id}&sz=w1000`);
+        photo.appendChild(img);
+      } else {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'person-photo no-photo';
+        placeholder.textContent = 'Немає фото';
+        photo.appendChild(placeholder);
+      }
+
+      const info = document.createElement('div');
+      info.className = 'person-info';
+
+      const name = document.createElement('div');
+      name.className = 'person-name';
+      name.textContent = person.name;
+
+      const details = document.createElement('div');
+      details.className = 'person-details';
+
+      const birthDateStr = person.birthDate.toLocaleDateString('uk-UA');
+      const birthYear = person.birthDate.getFullYear();
+
+      details.innerHTML = `
+        <div>Дата народження: ${birthDateStr}</div>
+        <div>Рік: ${birthYear}</div>
+        <div>Вік: ${person.age} років</div>
+        ${person.phone ? `<div>Телефон: ${linkifyPhones(person.phone)}</div>` : ''}
+      `;
+
+      info.appendChild(name);
+      info.appendChild(details);
+      card.appendChild(photo);
+      card.appendChild(info);
+      monthGroup.appendChild(card);
+    });
+
+    container.appendChild(monthGroup);
+  });
+}
+
 
     // Обработчики событий
     document.getElementById('search').addEventListener('input', applyFilters);
