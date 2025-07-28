@@ -86,27 +86,31 @@
     }
     .card img {
       width: 100%;
-      max-height: 75%;
+      max-height: 60%; /* Уменьшено с 75% до 60% для освобождения места под текст */
       object-fit: contain;
       border-radius: 15px;
       flex-grow: 1;
     }
     .info {
       flex-shrink: 0;
-      padding: 10px;
+      padding: 20px; /* Увеличено с 10px до 20px */
       text-align: center;
-      font-size: 1.2em;
+      font-size: 1.8em; /* Увеличено с 1.2em до 1.8em */
       font-weight: 600;
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
       background: rgba(0, 0, 0, 0.3);
       border-top: 1px solid rgba(255,255,255,0.2);
       border-radius: 0 0 15px 15px;
       width: 100%;
+      min-height: 35%; /* Минимальная высота для текста */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
     .info strong {
       display: block;
-      margin-bottom: 5px;
-      font-size: 1.3em;
+      margin-bottom: 10px; /* Увеличено с 5px до 10px */
+      font-size: 1.4em; /* Увеличено с 1.3em до 1.4em */
       color: #ffd700;
     }
     .nav {
@@ -138,6 +142,75 @@
       background: rgba(255,255,255,0.3);
       transform: scale(1.1);
       box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    }
+    
+    /* Стили для списка с чекбоксами */
+    .person-list {
+      list-style: none;
+      padding: 0;
+      margin: 20px 0;
+      text-align: left;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .person-item {
+      display: flex;
+      align-items: center;
+      margin: 15px 0;
+      padding: 15px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      transition: background 0.3s ease;
+    }
+    
+    .person-item:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .person-checkbox {
+      transform: scale(1.5);
+      margin-right: 15px;
+      cursor: pointer;
+    }
+    
+    .person-info {
+      flex-grow: 1;
+      font-size: 1.1em;
+    }
+    
+    .person-name {
+      font-weight: 600;
+      color: #ffd700;
+      margin-bottom: 5px;
+    }
+    
+    .person-details {
+      color: #ccc;
+      font-size: 0.9em;
+    }
+    
+    .selection-controls {
+      margin: 20px 0;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .control-btn {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: white;
+      padding: 8px 16px;
+      font-size: 0.9em;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .control-btn:hover {
+      background: rgba(255,255,255,0.3);
     }
   </style>
 </head>
@@ -182,7 +255,7 @@
 </div>
 
 <script>
-let slideIndex = 0, slides = [], people = [];
+let slideIndex = 0, slides = [], people = [], allPeople = [];
 
 const fileId = '1BsQR7Q1HfDx1u0QeHnzY8gvlac2iUYFA';
 const apiKey = 'AIzaSyAlxAoAyke0AAkiI3akNyWLNVwtoycjkgA';
@@ -269,39 +342,90 @@ function processData(data) {
   today.setHours(23, 59, 59, 999);
   pastWeek.setHours(0, 0, 0, 0);
 
-  people = data.entries.filter(p => {
+  allPeople = data.entries.filter(p => {
     if (!p.birthdate) return false;
     const [y, m, d] = p.birthdate.trim().split('-');
     const b = new Date(today.getFullYear(), parseInt(m) - 1, parseInt(d));
     return b >= pastWeek && b <= today;
   });
 
-  if (!people.length) {
+  if (!allPeople.length) {
     hideAll();
     document.getElementById('no-birthdays').style.display = 'block';
     return;
   }
 
   const infoBlock = document.getElementById('info-list');
-  infoBlock.innerHTML = `<h2>Знайдено ${people.length} осіб:</h2>` +
-    '<ul style="list-style:none;padding:0">' +
-    people.map(p => {
-      const [y, m, d] = p.birthdate.trim().split('-');
-      const birth = new Date(today.getFullYear(), parseInt(m) - 1, parseInt(d));
-      const age = calculateAge(p.birthdate);
-      return `<li style="margin:10px 0">${p.lastname}, ${birth.toLocaleDateString('uk-UA')} — ${age} років</li>`;
-    }).join('') + '</ul>' +
-    `<label style="display:block;margin:20px 0;font-size:1em;">
+  infoBlock.innerHTML = `
+    <h2>Знайдено ${allPeople.length} іменинників:</h2>
+    <div class="selection-controls">
+      <button class="control-btn" onclick="selectAll()">✓ Всі</button>
+      <button class="control-btn" onclick="deselectAll()">✗ Жодного</button>
+    </div>
+    <ul class="person-list">
+      ${allPeople.map((p, index) => {
+        const [y, m, d] = p.birthdate.trim().split('-');
+        const birth = new Date(today.getFullYear(), parseInt(m) - 1, parseInt(d));
+        const age = calculateAge(p.birthdate);
+        return `
+          <li class="person-item">
+            <input type="checkbox" class="person-checkbox" id="person-${index}" checked onchange="updateSelection()">
+            <div class="person-info">
+              <div class="person-name">${p.lastname}</div>
+              <div class="person-details">${birth.toLocaleDateString('uk-UA')} — ${age} років</div>
+            </div>
+          </li>
+        `;
+      }).join('')}
+    </ul>
+    <label style="display:block;margin:20px 0;font-size:1em;">
        <input type="checkbox" id="fullscreen-checkbox" style="transform:scale(1.5);margin-right:10px;" checked>
        Запустити в повноекранному режимі
-     </label>` +
-    '<button class="retry-btn" onclick="startSlideshow()">▶️ Почати показ</button>';
+     </label>
+    <button class="retry-btn" onclick="startSlideshow()" id="start-btn">▶️ Почати показ (${allPeople.length})</button>
+  `;
 
   hideAll();
   infoBlock.style.display = 'block';
+  updateSelection();
+}
+
+function selectAll() {
+  const checkboxes = document.querySelectorAll('.person-checkbox');
+  checkboxes.forEach(cb => cb.checked = true);
+  updateSelection();
+}
+
+function deselectAll() {
+  const checkboxes = document.querySelectorAll('.person-checkbox');
+  checkboxes.forEach(cb => cb.checked = false);
+  updateSelection();
+}
+
+function updateSelection() {
+  const checkboxes = document.querySelectorAll('.person-checkbox');
+  const selectedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+  
+  people = allPeople.filter((p, index) => {
+    const checkbox = document.getElementById(`person-${index}`);
+    return checkbox && checkbox.checked;
+  });
+  
+  const startBtn = document.getElementById('start-btn');
+  if (startBtn) {
+    startBtn.textContent = `▶️ Почати показ (${selectedCount})`;
+    startBtn.disabled = selectedCount === 0;
+    startBtn.style.opacity = selectedCount === 0 ? '0.5' : '1';
+  }
 }
 
 function startSlideshow() {
+  updateSelection();
+  if (people.length === 0) {
+    alert('Оберіть хоча б одну особу для показу');
+    return;
+  }
+  
   const fs = document.getElementById('fullscreen-checkbox');
   if (fs && fs.checked) requestFullscreen();
   document.getElementById('info-list').style.display = 'none';
@@ -385,7 +509,5 @@ function prevSlide() {
 }
 </script>
 
-
 </body>
 </html>
-
