@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Іменинники</title>
   <style>
     * {
@@ -229,11 +229,22 @@
       to { opacity: 1; transform: translateY(0); }
     }
     
-    /* Кнопка выхода */
+    /* Новый стиль для заголовка с кнопкой выхода */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    
+    .header-content {
+      text-align: left;
+      flex: 1;
+    }
+    
     .logout-btn {
-      position: fixed;
-      top: 20px;
-      right: 20px;
       background: rgba(255, 255, 255, 0.2);
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.3);
@@ -247,7 +258,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      z-index: 1000;
+      flex-shrink: 0;
     }
     
     .logout-btn:hover {
@@ -265,11 +276,6 @@
       max-width: 1200px;
       margin: 0 auto;
       padding: 20px;
-    }
-    
-    .header {
-      text-align: center;
-      margin-bottom: 2rem;
     }
     
     h1 {
@@ -698,9 +704,19 @@
         font-size: 1.5rem;
       }
       
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .header-content {
+        text-align: center;
+        width: 100%;
+      }
+      
       .logout-btn {
-        top: 10px;
-        right: 10px;
+        align-self: center;
         padding: 8px 15px;
         font-size: 12px;
       }
@@ -797,25 +813,25 @@
 </head>
 <body>
   <!-- Экран авторизации -->
-  <div id="authOverlay" class="auth-overlay">
+  <div id="authOverlay" class="auth-overlay" style="display: flex;">
     <div class="auth-container">
       <h2 class="auth-title">🔐 Авторизація</h2>
       <p class="auth-subtitle">Введіть дані для доступу до системи</p>
       
       <form id="loginForm" class="auth-form">
         <div class="input-group">
-          <input type="text" id="username" placeholder=" " required>
+          <input type="text" id="username" placeholder=" " required="">
           <label for="username">Логін</label>
         </div>
         
         <div class="input-group">
-          <input type="password" id="password" placeholder=" " required>
+          <input type="password" id="password" placeholder=" " required="">
           <label for="password">Пароль</label>
         </div>
 
         <div class="remember-me">
           <label class="checkbox-label">
-            <input type="checkbox" id="rememberMe" checked>
+            <input type="checkbox" id="rememberMe" checked="">
             <span class="checkmark"></span>
             Запам'ятати мене
           </label>
@@ -830,18 +846,18 @@
     </div>
   </div>
 
-  <!-- Кнопка выхода -->
-  <button id="logoutBtn" class="logout-btn hidden">Вийти</button>
-
   <!-- Основное приложение -->
   <div id="mainApp" class="hidden">
     <div class="particles"></div>
     
     <div class="container">
       <div class="header">
-        <h1>🎉 Іменинники</h1>
-        <div class="subtitle">Церква ЄХБ 'Дім Євангелія'</div>
-        <div class="subtitle">м.Суми, © 2025р.</div>
+        <div class="header-content">
+          <h1>🎉 Іменинники</h1>
+          <div class="subtitle">Церква ЄХБ 'Дім Євангелія'</div>
+          <div class="subtitle">м.Суми, © 2025р.</div>
+        </div>
+        <button id="logoutBtn" class="logout-btn">Вийти</button>
       </div>
       
       <div id="holidayCard" class="holiday-card" style="display:none;"></div>
@@ -896,8 +912,8 @@
     
     <!-- Модальное окно -->
     <div id="modal">
-      <button class="close-modal">&times;</button>
-      <img id="modal-img" src="" alt="Фото" />
+      <button class="close-modal">×</button>
+      <img id="modal-img" src="" alt="Фото">
     </div>
 
     <button id="toTop" style="position:fixed;bottom:20px;right:20px;padding:10px 15px;border:none;border-radius:10px;background:#00a8cc;color:white;font-size:1.2rem;display:none;z-index:1000;box-shadow:0 5px 15px rgba(0,0,0,0.3);cursor:pointer;">↑</button>
@@ -906,543 +922,539 @@
 <script>
 // Система авторизации
 class AuthSystem {
-  constructor() {
-    this.users = {
-      'admin': 'password123',
-      'pastor': 'church2025',
-      'user': 'gospel123'
-    };
-    this.currentUser = null;
-    this.init();
-  }
+ constructor() {
+   this.users = {
+     'admin': 'password123',
+     'pastor': 'nikolay2025',
+     'user': 'gospel123'
+   };
+   this.currentUser = null;
+   this.init();
+ }
 
-  init() {
-    // Проверяем, есть ли сохраненная сессия и данные пользователя
-    const savedUser = localStorage.getItem('currentUser');
-    const savedCredentials = localStorage.getItem('userCredentials');
-    
-    if (savedUser && savedCredentials) {
-      this.currentUser = savedUser;
-      // Автоматически заполняем форму сохраненными данными
-      const credentials = JSON.parse(savedCredentials);
-      document.getElementById('username').value = credentials.username;
-      document.getElementById('password').value = credentials.password;
-      this.showMainApp();
-    } else {
-      // Если есть сохраненные данные, заполняем форму
-      if (savedCredentials) {
-        const credentials = JSON.parse(savedCredentials);
-        document.getElementById('username').value = credentials.username;
-        document.getElementById('password').value = credentials.password;
-      }
-      this.showAuthScreen();
-    }
+ init() {
+   // Проверяем, есть ли сохраненная сессия и данные пользователя
+   const savedUser = localStorage.getItem('currentUser');
+   const savedCredentials = localStorage.getItem('userCredentials');
+   
+   if (savedUser && savedCredentials) {
+     this.currentUser = savedUser;
+     // Автоматически заполняем форму сохраненными данными
+     const credentials = JSON.parse(savedCredentials);
+     document.getElementById('username').value = credentials.username;
+     document.getElementById('password').value = credentials.password;
+     this.showMainApp();
+   } else {
+     // Если есть сохраненные данные, заполняем форму
+     if (savedCredentials) {
+       const credentials = JSON.parse(savedCredentials);
+       document.getElementById('username').value = credentials.username;
+       document.getElementById('password').value = credentials.password;
+     }
+     this.showAuthScreen();
+   }
 
-    // Обработчики событий
-    document.getElementById('loginForm').addEventListener('submit', (e) => this.handleLogin(e));
-    document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
-  }
+   // Обработчики событий
+   document.getElementById('loginForm').addEventListener('submit', (e) => this.handleLogin(e));
+   document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
+ }
 
-  showAuthScreen() {
-    document.getElementById('authOverlay').style.display = 'flex';
-    document.getElementById('mainApp').classList.add('hidden');
-    document.getElementById('logoutBtn').classList.add('hidden');
-  }
+ showAuthScreen() {
+   document.getElementById('authOverlay').style.display = 'flex';
+   document.getElementById('mainApp').classList.add('hidden');
+ }
 
-  showMainApp() {
-    document.getElementById('authOverlay').style.display = 'none';
-    document.getElementById('mainApp').classList.remove('hidden');
-    document.getElementById('logoutBtn').classList.remove('hidden');
-    
-    // Инициализация основного приложения
-    if (!window.appInitialized) {
-      initMainApp();
-      window.appInitialized = true;
-    }
-  }
+ showMainApp() {
+   document.getElementById('authOverlay').style.display = 'none';
+   document.getElementById('mainApp').classList.remove('hidden');
+   
+   // Инициализация основного приложения
+   if (!window.appInitialized) {
+     initMainApp();
+     window.appInitialized = true;
+   }
+ }
 
-  async handleLogin(e) {
-    e.preventDefault();
-    
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value;
-    const loginBtn = document.querySelector('.login-btn');
-    const btnText = loginBtn.querySelector('.btn-text');
-    const errorDiv = document.getElementById('loginError');
-    const rememberMe = document.getElementById('rememberMe')?.checked || true; // По умолчанию запоминаем
+ async handleLogin(e) {
+   e.preventDefault();
+   
+   const username = document.getElementById('username').value.trim();
+   const password = document.getElementById('password').value;
+   const loginBtn = document.querySelector('.login-btn');
+   const btnText = loginBtn.querySelector('.btn-text');
+   const errorDiv = document.getElementById('loginError');
+   const rememberMe = document.getElementById('rememberMe')?.checked || true; // По умолчанию запоминаем
 
-    // Показать загрузку
-    loginBtn.classList.add('loading');
-    btnText.textContent = '';
-    errorDiv.classList.add('hidden');
+   // Показать загрузку
+   loginBtn.classList.add('loading');
+   btnText.textContent = '';
+   errorDiv.classList.add('hidden');
 
-    // Имитация задержки сервера
-    await new Promise(resolve => setTimeout(resolve, 1000));
+   // Имитация задержки сервера
+   await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Проверка данных
-    if (this.users[username] && this.users[username] === password) {
-      this.currentUser = username;
-      
-      // Сохраняем сессию и данные пользователя
-      localStorage.setItem('currentUser', username);
-      if (rememberMe) {
-        localStorage.setItem('userCredentials', JSON.stringify({
-          username: username,
-          password: password
-        }));
-      }
-      
-      // Успешный вход
-      loginBtn.style.background = 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
-      btnText.textContent = 'Успіх!';
-      
-      setTimeout(() => {
-        this.showMainApp();
-        this.resetLoginForm();
-      }, 1000);
-      
-    } else {
-      // Ошибка входа
-      loginBtn.classList.remove('loading');
-      loginBtn.style.background = 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)';
-      btnText.textContent = 'Помилка!';
-      
-      errorDiv.textContent = 'Невірний логін або пароль';
-      errorDiv.classList.remove('hidden');
-      
-      setTimeout(() => {
-        this.resetLoginForm();
-      }, 2000);
-    }
-  }
+   // Проверка данных
+   if (this.users[username] && this.users[username] === password) {
+     this.currentUser = username;
+     
+     // Сохраняем сессию и данные пользователя
+     localStorage.setItem('currentUser', username);
+     if (rememberMe) {
+       localStorage.setItem('userCredentials', JSON.stringify({
+         username: username,
+         password: password
+       }));
+     }
+     
+     // Успешный вход
+     loginBtn.style.background = 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
+     btnText.textContent = 'Успіх!';
+     
+     setTimeout(() => {
+       this.showMainApp();
+       this.resetLoginForm();
+     }, 1000);
+     
+   } else {
+     // Ошибка входа
+     loginBtn.classList.remove('loading');
+     loginBtn.style.background = 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)';
+     btnText.textContent = 'Помилка!';
+     
+     errorDiv.textContent = 'Невірний логін або пароль';
+     errorDiv.classList.remove('hidden');
+     
+     setTimeout(() => {
+       this.resetLoginForm();
+     }, 2000);
+   }
+ }
 
-  resetLoginForm() {
-    const loginBtn = document.querySelector('.login-btn');
-    const btnText = loginBtn.querySelector('.btn-text');
-    
-    loginBtn.classList.remove('loading');
-    loginBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-    btnText.textContent = 'Увійти';
-    document.getElementById('loginForm').reset();
-  }
+ resetLoginForm() {
+   const loginBtn = document.querySelector('.login-btn');
+   const btnText = loginBtn.querySelector('.btn-text');
+   
+   loginBtn.classList.remove('loading');
+   loginBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+   btnText.textContent = 'Увійти';
+   document.getElementById('loginForm').reset();
+ }
 
-  logout() {
-    // Показать подтверждение
-    if (confirm('Ви впевнені, що хочете вийти? Дані для входу будуть видалені.')) {
-      this.currentUser = null;
-      // Очищаем всю сохраненную информацию
-      localStorage.removeItem('currentUser');
-      localStorage.removeItem('userCredentials');
-      this.showAuthScreen();
-      this.resetLoginForm();
-      // Очищаем поля формы
-      document.getElementById('username').value = '';
-      document.getElementById('password').value = '';
-    }
-  }
+ logout() {
+   // Показать подтверждение
+   if (confirm('Ви впевнені, що хочете вийти? Дані для входу будуть видалені.')) {
+     this.currentUser = null;
+     // Очищаем всю сохраненную информацию
+     localStorage.removeItem('currentUser');
+     localStorage.removeItem('userCredentials');
+     this.showAuthScreen();
+     this.resetLoginForm();
+     // Очищаем поля формы
+     document.getElementById('username').value = '';
+     document.getElementById('password').value = '';
+   }
+ }
 }
 
 // Функции основного приложения
 function linkifyPhones(text) {
-  const phoneRegex = /(\+?\d[\d\s\-().]{5,}\d)/g;
-  return text.replace(phoneRegex, match => {
-    const cleaned = match.replace(/[^\d+]/g, '');
-    return `<a href="tel:${cleaned}">${match}</a>`;
-  });
+ const phoneRegex = /(\+?\d[\d\s\-().]{5,}\d)/g;
+ return text.replace(phoneRegex, match => {
+   const cleaned = match.replace(/[^\d+]/g, '');
+   return `<a href="tel:${cleaned}">${match}</a>`;
+ });
 }
 
 // Кнопка "Наверх"
 function initScrollToTop() {
-  window.addEventListener('scroll', () => {
-    document.getElementById('toTop').style.display = window.scrollY > 300 ? 'block' : 'none';
-  });
-  
-  document.getElementById('toTop').addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
+ window.addEventListener('scroll', () => {
+   document.getElementById('toTop').style.display = window.scrollY > 300 ? 'block' : 'none';
+ });
+ 
+ document.getElementById('toTop').addEventListener('click', () => {
+   window.scrollTo({ top: 0, behavior: 'smooth' });
+ });
 }
 
 // Создание частиц на фоне
 function createParticles() {
-  const particles = document.querySelector('.particles');
-  for (let i = 0; i < 50; i++) {
-    const particle = document.createElement('div');
-    particle.className = 'particle';
-    particle.style.left = Math.random() * 100 + '%';
-    particle.style.animationDelay = Math.random() * 15 + 's';
-    particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
-    particles.appendChild(particle);
-  }
+ const particles = document.querySelector('.particles');
+ for (let i = 0; i < 50; i++) {
+   const particle = document.createElement('div');
+   particle.className = 'particle';
+   particle.style.left = Math.random() * 100 + '%';
+   particle.style.animationDelay = Math.random() * 15 + 's';
+   particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+   particles.appendChild(particle);
+ }
 }
 
 // Вычисление Пасхи по Григорианскому календарю
 function getWesternEaster(year) {
-  const f = Math.floor,
-    a = year % 19,
-    b = f(year / 100),
-    c = year % 100,
-    d = f(b / 4),
-    e = b % 4,
-    f1 = f((b + 8) / 25),
-    g = f((b - f1 + 1) / 3),
-    h = (19 * a + b - d - g + 15) % 30,
-    i = f(c / 4),
-    k = c % 4,
-    l = (32 + 2 * e + 2 * i - h - k) % 7,
-    m = f((a + 11 * h + 22 * l) / 451),
-    month = f((h + l - 7 * m + 114) / 31),
-    day = ((h + l - 7 * m + 114) % 31) + 1;
-  return new Date(year, month - 1, day);
+ const f = Math.floor,
+   a = year % 19,
+   b = f(year / 100),
+   c = year % 100,
+   d = f(b / 4),
+   e = b % 4,
+   f1 = f((b + 8) / 25),
+   g = f((b - f1 + 1) / 3),
+   h = (19 * a + b - d - g + 15) % 30,
+   i = f(c / 4),
+   k = c % 4,
+   l = (32 + 2 * e + 2 * i - h - k) % 7,
+   m = f((a + 11 * h + 22 * l) / 451),
+   month = f((h + l - 7 * m + 114) / 31),
+   day = ((h + l - 7 * m + 114) % 31) + 1;
+ return new Date(year, month - 1, day);
 }
 
 // Основные праздники
 function getChristianHolidays(year) {
-  const easter = getWesternEaster(year);
-  const ms = 24 * 60 * 60 * 1000;
+ const easter = getWesternEaster(year);
+ const ms = 24 * 60 * 60 * 1000;
 
-  return [
-    { name: "Різдво Христове", date: new Date(year, 11, 25) },
-    { name: "Воскресіння Христове (Пасха)", date: easter },
-    { name: "Вознесіння Господнє", date: new Date(easter.getTime() + 39 * ms) },
-    { name: "День П'ятидесятниці", date: new Date(easter.getTime() + 49 * ms) },
-    { name: "Новий Рік", date: new Date(year, 0, 1) },
-  ];
+ return [
+   { name: "Різдво Христове", date: new Date(year, 11, 25) },
+   { name: "Воскресіння Христове (Пасха)", date: easter },
+   { name: "Вознесіння Господнє", date: new Date(easter.getTime() + 39 * ms) },
+   { name: "День П'ятидесятниці", date: new Date(easter.getTime() + 49 * ms) },
+   { name: "Новий Рік", date: new Date(year, 0, 1) },
+ ];
 }
 
 // Проверка: входит ли дата в заданную неделю
 function isDateInWeek(date, weekStart) {
-  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  return d >= weekStart && d < new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+ const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+ return d >= weekStart && d < new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
 }
 
 // Вывод карточки с праздниками
 function showHolidayCardIfNeeded() {
-  const today = new Date();
-  const currentWeekStart = new Date(today);
-  currentWeekStart.setDate(today.getDate() - today.getDay());
+ const today = new Date();
+ const currentWeekStart = new Date(today);
+ currentWeekStart.setDate(today.getDate() - today.getDay());
 
-  const holidays = getChristianHolidays(today.getFullYear())
-    .filter(h => isDateInWeek(h.date, currentWeekStart));
+ const holidays = getChristianHolidays(today.getFullYear())
+   .filter(h => isDateInWeek(h.date, currentWeekStart));
 
-  if (holidays.length === 0) return;
+ if (holidays.length === 0) return;
 
-  const holidayCard = document.getElementById('holidayCard');
-  holidayCard.innerHTML = `
-    <h3>Християнські свята цього тижня</h3>
-    <ul>
-      ${holidays.map(h => `<li><strong>${h.name}</strong> — ${h.date.toLocaleDateString('uk-UA')}</li>`).join('')}
-    </ul>
-  `;
-  holidayCard.style.display = 'block';
+ const holidayCard = document.getElementById('holidayCard');
+ holidayCard.innerHTML = `
+   <h3>Християнські свята цього тижня</h3>
+   <ul>
+     ${holidays.map(h => `<li><strong>${h.name}</strong> — ${h.date.toLocaleDateString('uk-UA')}</li>`).join('')}
+   </ul>
+ `;
+ holidayCard.style.display = 'block';
 }
 
 // Основное приложение
 function initMainApp() {
-  const fileId = '1BsQR7Q1HfDx1u0QeHnzY8gvlac2iUYFA';
-  const apiKey = 'AIzaSyAlxAoAyke0AAkiI3akNyWLNVwtoycjkgA';
-  
-  let allPeople = [];
-  let filteredPeople = [];
-  
-  const monthNames = [
-    'Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень',
-    'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'
-  ];
+ const fileId = '1BsQR7Q1HfDx1u0QeHnzY8gvlac2iUYFA';
+ const apiKey = 'AIzaSyAlxAoAyke0AAkiI3akNyWLNVwtoycjkgA';
+ 
+ let allPeople = [];
+ let filteredPeople = [];
+ 
+ const monthNames = [
+   'Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень',
+   'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'
+ ];
 
-  async function loadData() {
-    try {
-      hideAll();
-      document.getElementById('loading').classList.remove('hidden');
+ async function loadData() {
+   try {
+     hideAll();
+     document.getElementById('loading').classList.remove('hidden');
 
-      const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${apiKey}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const json = await res.json();
-      
-      allPeople = json.entries.map(person => {
-        const birthDate = new Date(person.birthdate);
-        const age = calculateAge(birthDate);
-        
-        return {
-          name: person.lastname,
-          birthDate: birthDate,
-          age: age,
-          phone: person.phone || '',
-          id: person.id || '',
-          hasPhoto: !!(person.id && person.id.trim())
-        };
-      });
-      
-      filteredPeople = [...allPeople];
-      renderData();
-      
-    } catch (e) {
-      showError(e.message);
-    }
-  }
+     const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${apiKey}`;
+     const res = await fetch(url);
+     if (!res.ok) throw new Error('HTTP ' + res.status);
+     const json = await res.json();
+     
+     allPeople = json.entries.map(person => {
+       const birthDate = new Date(person.birthdate);
+       const age = calculateAge(birthDate);
+       
+       return {
+         name: person.lastname,
+         birthDate: birthDate,
+         age: age,
+         phone: person.phone || '',
+         id: person.id || '',
+         hasPhoto: !!(person.id && person.id.trim())
+       };
+     });
+     
+     filteredPeople = [...allPeople];
+     renderData();
+     
+   } catch (e) {
+     showError(e.message);
+   }
+ }
 
-  function hideAll() {
-    document.getElementById('loading').classList.add('hidden');
-    document.getElementById('error').classList.add('hidden');
-    document.getElementById('list').innerHTML = '';
-    document.getElementById('stats').innerHTML = '';
-  }
+ function hideAll() {
+   document.getElementById('loading').classList.add('hidden');
+   document.getElementById('error').classList.add('hidden');
+   document.getElementById('list').innerHTML = '';
+   document.getElementById('stats').innerHTML = '';
+ }
 
-  function showError(msg) {
-    hideAll();
-    const err = document.getElementById('error');
-    err.textContent = 'Помилка завантаження: ' + msg;
-    err.classList.remove('hidden');
-  }
+ function showError(msg) {
+   hideAll();
+   const err = document.getElementById('error');
+   err.textContent = 'Помилка завантаження: ' + msg;
+   err.classList.remove('hidden');
+ }
 
-  function calculateAge(birthDate) {
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
-    return age;
-  }
+ function calculateAge(birthDate) {
+   const today = new Date();
+   let age = today.getFullYear() - birthDate.getFullYear();
+   const m = today.getMonth() - birthDate.getMonth();
+   if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+   return age;
+ }
 
-  function openModal(src) {
-    const modal = document.getElementById('modal');
-    const img = document.getElementById('modal-img');
-    img.src = src;
-    modal.style.display = 'flex';
-  }
+ function openModal(src) {
+   const modal = document.getElementById('modal');
+   const img = document.getElementById('modal-img');
+   img.src = src;
+   modal.style.display = 'flex';
+ }
 
-  function closeModal() {
-    document.getElementById('modal').style.display = 'none';
-  }
+ function closeModal() {
+   document.getElementById('modal').style.display = 'none';
+ }
 
-  function applyFilters() {
-    const searchTerm = document.getElementById('search').value.toLowerCase();
-    const monthFilter = document.getElementById('monthFilter').value;
-    const photoFilter = document.getElementById('photoFilter').value;
-    
-    filteredPeople = allPeople.filter(person => {
-      const matchesSearch = person.name.toLowerCase().includes(searchTerm);
-      const matchesMonth = monthFilter === '' || person.birthDate.getMonth() === parseInt(monthFilter);
-      
-      let matchesPhoto = true;
-      if (photoFilter === 'with') {
-        matchesPhoto = person.hasPhoto;
-      } else if (photoFilter === 'without') {
-        matchesPhoto = !person.hasPhoto;
-      }
-      
-      return matchesSearch && matchesMonth && matchesPhoto;
-    });
-    
-    renderData();
-  }
+ function applyFilters() {
+   const searchTerm = document.getElementById('search').value.toLowerCase();
+   const monthFilter = document.getElementById('monthFilter').value;
+   const photoFilter = document.getElementById('photoFilter').value;
+   
+   filteredPeople = allPeople.filter(person => {
+     const matchesSearch = person.name.toLowerCase().includes(searchTerm);
+     const matchesMonth = monthFilter === '' || person.birthDate.getMonth() === parseInt(monthFilter);
+     
+     let matchesPhoto = true;
+     if (photoFilter === 'with') {
+       matchesPhoto = person.hasPhoto;
+     } else if (photoFilter === 'without') {
+       matchesPhoto = !person.hasPhoto;
+     }
+     
+     return matchesSearch && matchesMonth && matchesPhoto;
+   });
+   
+   renderData();
+ }
 
-  function renderData() {
-    hideAll();
+ function renderData() {
+   hideAll();
 
-    const stats = document.getElementById('stats');
-    const withPhoto = filteredPeople.filter(p => p.hasPhoto).length;
-    const withoutPhoto = filteredPeople.filter(p => !p.hasPhoto).length;
+   const stats = document.getElementById('stats');
+   const withPhoto = filteredPeople.filter(p => p.hasPhoto).length;
+   const withoutPhoto = filteredPeople.filter(p => !p.hasPhoto).length;
 
-    stats.innerHTML = `
-      <strong>Всього: ${filteredPeople.length}</strong> | 
-      З фото: ${withPhoto} | 
-      Без фото: ${withoutPhoto}
-    `;
+   stats.innerHTML = `
+     <strong>Всього: ${filteredPeople.length}</strong> | 
+     З фото: ${withPhoto} | 
+     Без фото: ${withoutPhoto}
+   `;
 
-    if (filteredPeople.length === 0) {
-      document.getElementById('list').innerHTML = '<div class="no-results">🔍 Нічого не знайдено</div>';
-      return;
-    }
+   if (filteredPeople.length === 0) {
+     document.getElementById('list').innerHTML = '<div class="no-results">🔍 Нічого не знайдено</div>';
+     return;
+   }
 
-    const today = new Date();
-    const todayPeople = filteredPeople.filter(p =>
-      p.birthDate.getDate() === today.getDate() &&
-      p.birthDate.getMonth() === today.getMonth()
-    );
+   const today = new Date();
+   const todayPeople = filteredPeople.filter(p =>
+     p.birthDate.getDate() === today.getDate() &&
+     p.birthDate.getMonth() === today.getMonth()
+   );
 
-    const todayBlock = document.getElementById('todayList');
-    const todayCards = document.getElementById('todayCards');
-    todayCards.innerHTML = '';
+   const todayBlock = document.getElementById('todayList');
+   const todayCards = document.getElementById('todayCards');
+   todayCards.innerHTML = '';
 
-    if (todayPeople.length > 0) {
-      todayBlock.classList.remove('hidden');
+   if (todayPeople.length > 0) {
+     todayBlock.classList.remove('hidden');
 
-      todayPeople.forEach((person, index) => {
-        const card = document.createElement('div');
-        card.className = 'person-card';
-        card.style.animationDelay = (index * 0.05) + 's';
-        card.style.background = '#fff3cd';
-        card.style.borderColor = '#ff9900';
-        card.style.boxShadow = '0 0 15px rgba(255, 153, 0, 0.6)';
+     todayPeople.forEach((person, index) => {
+       const card = document.createElement('div');
+       card.className = 'person-card';
+       card.style.animationDelay = (index * 0.05) + 's';
+       card.style.background = '#fff3cd';
+       card.style.borderColor = '#ff9900';
+       card.style.boxShadow = '0 0 15px rgba(255, 153, 0, 0.6)';
 
-        const photo = document.createElement('div');
-        if (person.hasPhoto) {
-          const img = document.createElement('img');
-          img.src = `https://drive.google.com/thumbnail?id=${person.id}&sz=w200`;
-          img.alt = person.name;
-          img.className = 'person-photo';
-          img.onerror = () => {
-            img.src = 'https://raw.githubusercontent.com/christian-word/slider/main/4054617.png';
-          };
-          img.onclick = () => openModal(`https://drive.google.com/thumbnail?id=${person.id}&sz=w1000`);
-          photo.appendChild(img);
-        } else {
-          const placeholder = document.createElement('div');
-          placeholder.className = 'person-photo no-photo';
-          placeholder.textContent = 'Немає фото';
-          photo.appendChild(placeholder);
-        }
+       const photo = document.createElement('div');
+       if (person.hasPhoto) {
+         const img = document.createElement('img');
+         img.src = `https://drive.google.com/thumbnail?id=${person.id}&sz=w200`;
+         img.alt = person.name;
+         img.className = 'person-photo';
+         img.onerror = () => {
+           img.src = 'https://raw.githubusercontent.com/christian-word/slider/main/4054617.png';
+         };
+         img.onclick = () => openModal(`https://drive.google.com/thumbnail?id=${person.id}&sz=w1000`);
+         photo.appendChild(img);
+       } else {
+         const placeholder = document.createElement('div');
+         placeholder.className = 'person-photo no-photo';
+         placeholder.textContent = 'Немає фото';
+         photo.appendChild(placeholder);
+       }
 
-        const info = document.createElement('div');
-        info.className = 'person-info';
+       const info = document.createElement('div');
+       info.className = 'person-info';
 
-        const name = document.createElement('div');
-        name.className = 'person-name';
-        name.textContent = person.name;
+       const name = document.createElement('div');
+       name.className = 'person-name';
+       name.textContent = person.name;
 
-        const details = document.createElement('div');
-        details.className = 'person-details';
+       const details = document.createElement('div');
+       details.className = 'person-details';
 
-        const birthDateStr = person.birthDate.toLocaleDateString('uk-UA');
-        const birthYear = person.birthDate.getFullYear();
+       const birthDateStr = person.birthDate.toLocaleDateString('uk-UA');
+       const birthYear = person.birthDate.getFullYear();
 
-        details.innerHTML = `
-          <div>Дата народження: ${birthDateStr}</div>
-          <div>Рік: ${birthYear}</div>
-          <div>Вік: ${person.age} років</div>
-          ${person.phone ? `<div>Телефон: ${linkifyPhones(person.phone)}</div>` : ''}
-        `;
+       details.innerHTML = `
+         <div>Дата народження: ${birthDateStr}</div>
+         <div>Рік: ${birthYear}</div>
+         <div>Вік: ${person.age} років</div>
+         ${person.phone ? `<div>Телефон: ${linkifyPhones(person.phone)}</div>` : ''}
+       `;
 
-        info.appendChild(name);
-        info.appendChild(details);
-        card.appendChild(photo);
-        card.appendChild(info);
-        todayCards.appendChild(card);
-      });
+       info.appendChild(name);
+       info.appendChild(details);
+       card.appendChild(photo);
+       card.appendChild(info);
+       todayCards.appendChild(card);
+     });
 
-    } else {
-      todayBlock.classList.add('hidden');
-    }
+   } else {
+     todayBlock.classList.add('hidden');
+   }
 
-    const peopleByMonth = {};
-    filteredPeople.forEach(person => {
-      const month = person.birthDate.getMonth();
-      if (!peopleByMonth[month]) {
-        peopleByMonth[month] = [];
-      }
-      peopleByMonth[month].push(person);
-    });
+   const peopleByMonth = {};
+   filteredPeople.forEach(person => {
+     const month = person.birthDate.getMonth();
+     if (!peopleByMonth[month]) {
+       peopleByMonth[month] = [];
+     }
+     peopleByMonth[month].push(person);
+   });
 
-    Object.keys(peopleByMonth).forEach(month => {
-      peopleByMonth[month].sort((a, b) => a.birthDate.getDate() - b.birthDate.getDate());
-    });
+   Object.keys(peopleByMonth).forEach(month => {
+     peopleByMonth[month].sort((a, b) => a.birthDate.getDate() - b.birthDate.getDate());
+   });
 
-    const container = document.getElementById('list');
-    container.innerHTML = '';
+   const container = document.getElementById('list');
+   container.innerHTML = '';
 
-    Object.keys(peopleByMonth).sort((a, b) => a - b).forEach((month, index) => {
-      const monthGroup = document.createElement('div');
-      monthGroup.className = 'month-group';
-      monthGroup.style.animationDelay = (index * 0.1) + 's';
+   Object.keys(peopleByMonth).sort((a, b) => a - b).forEach((month, index) => {
+     const monthGroup = document.createElement('div');
+     monthGroup.className = 'month-group';
+     monthGroup.style.animationDelay = (index * 0.1) + 's';
 
-      const title = document.createElement('h2');
-      title.textContent = `${monthNames[month]} (${peopleByMonth[month].length})`;
-      monthGroup.appendChild(title);
+     const title = document.createElement('h2');
+     title.textContent = `${monthNames[month]} (${peopleByMonth[month].length})`;
+     monthGroup.appendChild(title);
 
-      peopleByMonth[month].forEach((person, personIndex) => {
-        const card = document.createElement('div');
-        const isToday = (() => {
-          const today = new Date();
-          return person.birthDate.getDate() === today.getDate() &&
-                 person.birthDate.getMonth() === today.getMonth();
-        })();
-        if (isToday) {
-          card.style.background = '#fff3cd';
-          card.style.borderColor = '#ff9900';
-          card.style.boxShadow = '0 0 15px rgba(255, 153, 0, 0.6)';
-        }
+     peopleByMonth[month].forEach((person, personIndex) => {
+       const card = document.createElement('div');
+       const isToday = (() => {
+         const today = new Date();
+         return person.birthDate.getDate() === today.getDate() &&
+                person.birthDate.getMonth() === today.getMonth();
+       })();
+       if (isToday) {
+         card.style.background = '#fff3cd';
+         card.style.borderColor = '#ff9900';
+         card.style.boxShadow = '0 0 15px rgba(255, 153, 0, 0.6)';
+       }
 
-        card.className = 'person-card';
-        card.style.animationDelay = (index * 0.1 + personIndex * 0.05) + 's';
+       card.className = 'person-card';
+       card.style.animationDelay = (index * 0.1 + personIndex * 0.05) + 's';
 
-        const photo = document.createElement('div');
-        if (person.hasPhoto) {
-          const img = document.createElement('img');
-          img.src = `https://drive.google.com/thumbnail?id=${person.id}&sz=w200`;
-          img.alt = person.name;
-          img.className = 'person-photo';
-          img.onerror = () => {
-            img.src = 'https://raw.githubusercontent.com/christian-word/slider/main/4054617.png';
-          };
-          img.onclick = () => openModal(`https://drive.google.com/thumbnail?id=${person.id}&sz=w1000`);
-          photo.appendChild(img);
-        } else {
-          const placeholder = document.createElement('div');
-          placeholder.className = 'person-photo no-photo';
-          placeholder.textContent = 'Немає фото';
-          photo.appendChild(placeholder);
-        }
+       const photo = document.createElement('div');
+       if (person.hasPhoto) {
+         const img = document.createElement('img');
+         img.src = `https://drive.google.com/thumbnail?id=${person.id}&sz=w200`;
+         img.alt = person.name;
+         img.className = 'person-photo';
+         img.onerror = () => {
+           img.src = 'https://raw.githubusercontent.com/christian-word/slider/main/4054617.png';
+         };
+         img.onclick = () => openModal(`https://drive.google.com/thumbnail?id=${person.id}&sz=w1000`);
+         photo.appendChild(img);
+       } else {
+         const placeholder = document.createElement('div');
+         placeholder.className = 'person-photo no-photo';
+         placeholder.textContent = 'Немає фото';
+         photo.appendChild(placeholder);
+       }
 
-        const info = document.createElement('div');
-        info.className = 'person-info';
+       const info = document.createElement('div');
+       info.className = 'person-info';
 
-        const name = document.createElement('div');
-        name.className = 'person-name';
-        name.textContent = person.name;
+       const name = document.createElement('div');
+       name.className = 'person-name';
+       name.textContent = person.name;
 
-        const details = document.createElement('div');
-        details.className = 'person-details';
+       const details = document.createElement('div');
+       details.className = 'person-details';
 
-        const birthDateStr = person.birthDate.toLocaleDateString('uk-UA');
-        const birthYear = person.birthDate.getFullYear();
+       const birthDateStr = person.birthDate.toLocaleDateString('uk-UA');
+       const birthYear = person.birthDate.getFullYear();
 
-        details.innerHTML = `
-          <div>Дата народження: ${birthDateStr}</div>
-          <div>Рік: ${birthYear}</div>
-          <div>Вік: ${person.age} років</div>
-          ${person.phone ? `<div>Телефон: ${linkifyPhones(person.phone)}</div>` : ''}
-        `;
+       details.innerHTML = `
+         <div>Дата народження: ${birthDateStr}</div>
+         <div>Рік: ${birthYear}</div>
+         <div>Вік: ${person.age} років</div>
+         ${person.phone ? `<div>Телефон: ${linkifyPhones(person.phone)}</div>` : ''}
+       `;
 
-        info.appendChild(name);
-        info.appendChild(details);
-        card.appendChild(photo);
-        card.appendChild(info);
-        monthGroup.appendChild(card);
-      });
+       info.appendChild(name);
+       info.appendChild(details);
+       card.appendChild(photo);
+       card.appendChild(info);
+       monthGroup.appendChild(card);
+     });
 
-      container.appendChild(monthGroup);
-    });
-  }
+     container.appendChild(monthGroup);
+   });
+ }
 
-  // Обработчики событий
-  document.getElementById('search').addEventListener('input', applyFilters);
-  document.getElementById('monthFilter').addEventListener('change', applyFilters);
-  document.getElementById('photoFilter').addEventListener('change', applyFilters);
-  
-  // Закрытие модального окна
-  document.getElementById('modal').addEventListener('click', (e) => {
-    if (e.target.id === 'modal') closeModal();
-  });
-  document.querySelector('.close-modal').addEventListener('click', closeModal);
-  
-  // Закрытие модального окна по Escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeModal();
-  });
+ // Обработчики событий
+ document.getElementById('search').addEventListener('input', applyFilters);
+ document.getElementById('monthFilter').addEventListener('change', applyFilters);
+ document.getElementById('photoFilter').addEventListener('change', applyFilters);
+ 
+ // Закрытие модального окна
+ document.getElementById('modal').addEventListener('click', (e) => {
+   if (e.target.id === 'modal') closeModal();
+ });
+ document.querySelector('.close-modal').addEventListener('click', closeModal);
+ 
+ // Закрытие модального окна по Escape
+ document.addEventListener('keydown', (e) => {
+   if (e.key === 'Escape') closeModal();
+ });
 
-  // Инициализация
-  createParticles();
-  showHolidayCardIfNeeded();
-  initScrollToTop();
-  loadData();
+ // Инициализация
+ createParticles();
+ showHolidayCardIfNeeded();
+ initScrollToTop();
+ loadData();
 }
 
 // Запуск приложения
 document.addEventListener('DOMContentLoaded', () => {
-  new AuthSystem();
+ new AuthSystem();
 });
-</script>
-
+    </script>
 </body>
 </html>
-
