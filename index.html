@@ -1,0 +1,135 @@
+﻿<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Іменинники тижня</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root{ --bg:#111; --card:#222; --text:#fff; --accent:#ffd700}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,Arial}
+  body{height:100vh;background:var(--bg);color:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center}
+  #loader{font-size:2rem}
+  #err{color:tomato}
+  #pick{padding:1rem;background:var(--card);border-radius:8px;display:none;max-height:80vh;overflow:auto}
+  #pick ul{list-style:none}
+  #pick li{padding:.4rem}
+  #pick button{margin-top:1rem;padding:.6rem 1.2rem;font-size:1rem;cursor:pointer}
+  #show{display:none;position:relative;width:100%;height:100%}
+  #show img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+  #show .info{position:absolute;bottom:5%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);padding:.8rem 1.4rem;border-radius:6px;text-align:center;font-size:1.4rem}
+  #show .info strong{color:var(--accent)}
+  #nav{position:absolute;top:50%;width:100%;display:flex;justify-content:space-between;transform:translateY(-50%);padding:0 1rem}
+  #nav button{background:rgba(255,255,255,.2);border:none;color:#fff;font-size:2rem;padding:.4rem .8rem;cursor:pointer;border-radius:50%}
+</style>
+</head>
+<body>
+
+<div id="loader">⏳ завантаження…</div>
+<div id="err" hidden></div>
+
+<div id="pick">
+  <h3>Оберіть іменинників:</h3>
+  <ul id="list"></ul>
+  <label><input type="checkbox" id="fs" checked> повноекранний режим</label><br>
+  <button id="start">▶ Почати</button>
+</div>
+
+<div id="show">
+  <img id="img" alt="">
+  <div class="info"><strong id="name"></strong><span id="age"></span></div>
+  <div id="nav">
+    <button onclick="change(-1)">❮</button>
+    <button onclick="change(+1)">❯</button>
+  </div>
+</div>
+
+<script type="module">
+/* ---------- CONFIG ---------- */
+const FILE_ID = '1BsQR7Q1QfDx1u0QeHnzY8gvlac2iUYFA';
+const API_KEY = 'AIzaSyAlxAoAyke0AAkiI3akNyWLNVwtoycjkgA';
+const FALLBACK  = 'https://raw.githubusercontent.com/christian-word/slider/main/now.jpg';
+
+/* ---------- UTILS ----------- */
+const $ = q => document.querySelector(q);
+const daysBack = 6;
+const today = new Date();
+const weekAgo = new Date(today - daysBack * 24*60*60*1000);
+
+const age = bd => {
+  const b = new Date(bd);
+  let a = today.getFullYear() - b.getFullYear();
+  const m = today.getMonth() - b.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < b.getDate())) a--;
+  return a;
+};
+
+/* ---------- FETCH ----------- */
+async function getJSON(){
+  const url = `https://www.googleapis.com/drive/v3/files/${FILE_ID}?alt=media&key=${API_KEY}`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
+/* ---------- RENDER ---------- */
+function buildPicker(bdays){
+  const ul = $('#list');
+  ul.innerHTML = '';
+  bdays.forEach((p,i) => {
+    const li = document.createElement('li');
+    li.innerHTML = `<label><input type="checkbox" checked data-i="${i}">
+      ${p.lastname} — ${new Date(p.birthdate).toLocaleDateString('uk-UA')} (${age(p.birthdate)})</label>`;
+    ul.appendChild(li);
+  });
+  $('#pick').hidden = false;
+  $('#start').onclick = () => startShow(bdays);
+}
+
+/* ---------- SLIDESHOW ------- */
+let selected = [], idx = 0;
+
+function startShow(source){
+  const checked = [...$$('input[type=checkbox][data-i]')].filter(c=>c.checked);
+  if (!checked.length) return alert('Оберіть хоча б одну людину');
+  selected = checked.map(c => source[c.dataset.i]);
+  idx = 0;
+  if ($('#fs').checked) document.documentElement.requestFullscreen?.();
+  $('#pick').hidden = true;
+  $('#show').hidden = false;
+  render();
+}
+
+function render(){
+  const p = selected[idx];
+  $('#name').textContent = p.lastname;
+  $('#age').textContent  = `${new Date(p.birthdate).toLocaleDateString('uk-UA')} — ${age(p.birthdate)} років`;
+  $('#img').src = `https://drive.google.com/thumbnail?id=${p.id}&sz=w1200`;
+  $('#img').onerror = () => $('#img').src = FALLBACK;
+}
+
+window.change = dir => {
+  idx = (idx + dir + selected.length) % selected.length;
+  render();
+};
+
+/* ---------- INIT ------------ */
+try {
+  const data = await getJSON();
+  const bdays = (data.entries || [])
+    .filter(p => p.birthdate)
+    .filter(p => {
+      const [y,m,d] = p.birthdate.split('-');
+      const thisYear = new Date(today.getFullYear(), m-1, d);
+      return thisYear >= weekAgo && thisYear <= today;
+    });
+  if (!bdays.length) throw new Error('Цього тижня немає іменинників');
+  $('#loader').hidden = true;
+  buildPicker(bdays);
+} catch (e) {
+  $('#loader').hidden = true;
+  $('#err').hidden = false;
+  $('#err').textContent = '❌ ' + e.message;
+}
+</script>
+</body>
+</html>
