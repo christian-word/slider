@@ -1,135 +1,732 @@
-﻿<!doctype html>
+﻿<!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="utf-8">
-<title>Іменинники тижня</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<style>
-  :root{ --bg:#111; --card:#222; --text:#fff; --accent:#ffd700}
-  *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,Arial}
-  body{height:100vh;background:var(--bg);color:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center}
-  #loader{font-size:2rem}
-  #err{color:tomato}
-  #pick{padding:1rem;background:var(--card);border-radius:8px;display:none;max-height:80vh;overflow:auto}
-  #pick ul{list-style:none}
-  #pick li{padding:.4rem}
-  #pick button{margin-top:1rem;padding:.6rem 1.2rem;font-size:1rem;cursor:pointer}
-  #show{display:none;position:relative;width:100%;height:100%}
-  #show img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
-  #show .info{position:absolute;bottom:5%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);padding:.8rem 1.4rem;border-radius:6px;text-align:center;font-size:1.4rem}
-  #show .info strong{color:var(--accent)}
-  #nav{position:absolute;top:50%;width:100%;display:flex;justify-content:space-between;transform:translateY(-50%);padding:0 1rem}
-  #nav button{background:rgba(255,255,255,.2);border:none;color:#fff;font-size:2rem;padding:.4rem .8rem;cursor:pointer;border-radius:50%}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Именинники тижня</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin: 20px auto;
+            max-width: 800px;
+        }
+
+        .loading-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 2em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            font-size: 1em;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            margin: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .person-list {
+            text-align: left;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .person-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            transition: background 0.2s ease;
+        }
+
+        .person-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .person-checkbox {
+            margin-right: 15px;
+            transform: scale(1.3);
+            cursor: pointer;
+        }
+
+        .person-info {
+            flex: 1;
+        }
+
+        .person-name {
+            font-weight: 600;
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+
+        .person-details {
+            color: #ccc;
+            font-size: 0.9em;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .fullscreen-option {
+            margin: 20px 0;
+            font-size: 1em;
+        }
+
+        .fullscreen-option input {
+            margin-right: 10px;
+            transform: scale(1.3);
+        }
+
+        /* Slider Styles */
+        .slider {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            z-index: 1000;
+            display: none;
+        }
+
+        .slides-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .slide {
+            min-width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .birthday-card {
+            width: 49%;
+            max-width: 850px;
+            height: 95vh;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(25px);
+            border-radius: 25px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .birthday-card.single {
+            width: 75%;
+            max-width: 950px;
+        }
+
+        .birthday-image {
+            width: 100%;
+            height: 80%;
+            object-fit: cover;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .birthday-info {
+            padding: 20px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            gap: 8px;
+        }
+
+        .birthday-name {
+            font-size: 2.8em;
+            font-weight: 700;
+            color: #ffd700;
+            line-height: 1.1;
+        }
+
+        .birthday-details {
+            font-size: 1.7em;
+            opacity: 0.9;
+        }
+
+        .nav-buttons {
+            position: fixed;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 30px;
+            transform: translateY(-50%);
+            pointer-events: none;
+            z-index: 1001;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            border: none;
+            color: white;
+            font-size: 2.2em;
+            padding: 18px 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            pointer-events: all;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(1.15);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .close-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            padding: 10px 15px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 1002;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .error-icon {
+            color: #ff6b6b;
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .upload-area {
+            border: 3px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 40px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .birthday-card {
+                width: 90%;
+                height: 45vh;
+            }
+
+            .birthday-card.single {
+                width: 90%;
+                height: 70vh;
+            }
+
+            .birthday-name {
+                font-size: 1.4em;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="app-container">
+        <!-- Loading State -->
+        <div id="loading-state" class="card">
+            <div class="loading-icon">🎂</div>
+            <div class="title">Завантаження іменинників...</div>
+            <div class="subtitle">Будь ласка, зачекайте</div>
+        </div>
 
-<div id="loader">⏳ завантаження…</div>
-<div id="err" hidden></div>
+        <!-- Error State -->
+        <div id="error-state" class="card hidden">
+            <div class="error-icon">⚠️</div>
+            <div class="title">Помилка завантаження</div>
+            <div class="subtitle" id="error-message">Не вдалося завантажити дані</div>
+            <div>
+                <button class="btn" onclick="app.loadData()">🔄 Повторити</button>
+                <button class="btn btn-secondary" onclick="app.showUpload()">📁 Завантажити файл</button>
+            </div>
+        </div>
 
-<div id="pick">
-  <h3>Оберіть іменинників:</h3>
-  <ul id="list"></ul>
-  <label><input type="checkbox" id="fs" checked> повноекранний режим</label><br>
-  <button id="start">▶ Почати</button>
-</div>
+        <!-- Upload State -->
+        <div id="upload-state" class="card hidden">
+            <div class="upload-area" onclick="app.selectFile()">
+                <div style="font-size: 3em; margin-bottom: 20px;">📁</div>
+                <div class="title">Завантажити JSON-файл</div>
+                <div class="subtitle">Перетягніть файл сюди або натисніть для вибору</div>
+            </div>
+            <input type="file" id="file-input" accept=".json" style="display: none;">
+        </div>
 
-<div id="show">
-  <img id="img" alt="">
-  <div class="info"><strong id="name"></strong><span id="age"></span></div>
-  <div id="nav">
-    <button onclick="change(-1)">❮</button>
-    <button onclick="change(+1)">❯</button>
-  </div>
-</div>
+        <!-- No Birthdays State -->
+        <div id="no-birthdays-state" class="card hidden">
+            <div style="font-size: 3em; margin-bottom: 20px;">😔</div>
+            <div class="title">Немає іменинників цього тижня</div>
+            <button class="btn" onclick="app.loadData()">🔄 Оновити</button>
+        </div>
 
-<script type="module">
-/* ---------- CONFIG ---------- */
-const FILE_ID = '1BsQR7Q1HfDx1u0QeHnzY8gvlac2iUYFA';   // было QfDx → стало HfDx
-const API_KEY = 'AIzaSyAlxAoAyke0AAkiI3akNyWLNVwtoycjkgA';
-const FALLBACK  = 'https://raw.githubusercontent.com/christian-word/slider/main/now.jpg';
+        <!-- Selection State -->
+        <div id="selection-state" class="card hidden">
+            <div class="title">Іменинники тижня</div>
+            <div class="subtitle" id="count-display"></div>
+            
+            <div class="controls">
+                <button class="btn btn-secondary" onclick="app.selectAll()">✓ Всі</button>
+                <button class="btn btn-secondary" onclick="app.deselectAll()">✗ Жодного</button>
+            </div>
 
-/* ---------- UTILS ----------- */
-const $ = q => document.querySelector(q);
-const daysBack = 6;
-const today = new Date();
-const weekAgo = new Date(today - daysBack * 24*60*60*1000);
+            <div class="person-list" id="person-list"></div>
 
-const age = bd => {
-  const b = new Date(bd);
-  let a = today.getFullYear() - b.getFullYear();
-  const m = today.getMonth() - b.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < b.getDate())) a--;
-  return a;
-};
+            <div class="fullscreen-option">
+                <label>
+                    <input type="checkbox" id="fullscreen-checkbox" checked>
+                    Запустити в повноекранному режимі
+                </label>
+            </div>
 
-/* ---------- FETCH ----------- */
-async function getJSON(){
-  const url = `https://www.googleapis.com/drive/v3/files/${FILE_ID}?alt=media&key=${API_KEY}`;
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(r.status);
-  return r.json();
-}
+            <button class="btn" id="start-btn" onclick="app.startSlideshow()">
+                ▶️ Почати показ (0)
+            </button>
+        </div>
+    </div>
 
-/* ---------- RENDER ---------- */
-function buildPicker(bdays){
-  const ul = $('#list');
-  ul.innerHTML = '';
-  bdays.forEach((p,i) => {
-    const li = document.createElement('li');
-    li.innerHTML = `<label><input type="checkbox" checked data-i="${i}">
-      ${p.lastname} — ${new Date(p.birthdate).toLocaleDateString('uk-UA')} (${age(p.birthdate)})</label>`;
-    ul.appendChild(li);
-  });
-  $('#pick').hidden = false;
-  $('#start').onclick = () => startShow(bdays);
-}
+    <!-- Slider -->
+    <div class="slider" id="slider">
+        <button class="close-btn" onclick="app.exitSlideshow()">✕</button>
+        <div class="slides-container" id="slides-container"></div>
+        <div class="nav-buttons">
+            <button class="nav-btn" onclick="app.prevSlide()">‹</button>
+            <button class="nav-btn" onclick="app.nextSlide()">›</button>
+        </div>
+    </div>
 
-/* ---------- SLIDESHOW ------- */
-let selected = [], idx = 0;
+    <script>
+        class BirthdayApp {
+            constructor() {
+                this.data = [];
+                this.filteredPeople = [];
+                this.selectedPeople = [];
+                this.currentSlide = 0;
+                this.slides = [];
+                
+                this.init();
+            }
 
-function startShow(source){
-  const checked = [...$$('input[type=checkbox][data-i]')].filter(c=>c.checked);
-  if (!checked.length) return alert('Оберіть хоча б одну людину');
-  selected = checked.map(c => source[c.dataset.i]);
-  idx = 0;
-  if ($('#fs').checked) document.documentElement.requestFullscreen?.();
-  $('#pick').hidden = true;
-  $('#show').hidden = false;
-  render();
-}
+            init() {
+                this.setupEventListeners();
+                this.loadData();
+            }
 
-function render(){
-  const p = selected[idx];
-  $('#name').textContent = p.lastname;
-  $('#age').textContent  = `${new Date(p.birthdate).toLocaleDateString('uk-UA')} — ${age(p.birthdate)} років`;
-  $('#img').src = `https://drive.google.com/thumbnail?id=${p.id}&sz=w1200`;
-  $('#img').onerror = () => $('#img').src = FALLBACK;
-}
+            setupEventListeners() {
+                const fileInput = document.getElementById('file-input');
+                fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
 
-window.change = dir => {
-  idx = (idx + dir + selected.length) % selected.length;
-  render();
-};
+                // Keyboard navigation
+                document.addEventListener('keydown', (e) => {
+                    if (document.getElementById('slider').style.display !== 'none') {
+                        if (e.key === 'ArrowLeft') this.prevSlide();
+                        if (e.key === 'ArrowRight') this.nextSlide();
+                        if (e.key === 'Escape') this.exitSlideshow();
+                    }
+                });
 
-/* ---------- INIT ------------ */
-try {
-  const data = await getJSON();
-  const bdays = (data.entries || [])
-    .filter(p => p.birthdate)
-    .filter(p => {
-      const [y,m,d] = p.birthdate.split('-');
-      const thisYear = new Date(today.getFullYear(), m-1, d);
-      return thisYear >= weekAgo && thisYear <= today;
-    });
-  if (!bdays.length) throw new Error('Цього тижня немає іменинників');
-  $('#loader').hidden = true;
-  buildPicker(bdays);
-} catch (e) {
-  $('#loader').hidden = true;
-  $('#err').hidden = false;
-  $('#err').textContent = '❌ ' + e.message;
-}
-</script>
+                // Drag and drop
+                const uploadArea = document.querySelector('.upload-area');
+                if (uploadArea) {
+                    uploadArea.addEventListener('dragover', (e) => e.preventDefault());
+                    uploadArea.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        this.handleFileSelect({ target: { files: e.dataTransfer.files } });
+                    });
+                }
+            }
+
+            showState(stateId) {
+                const states = ['loading-state', 'error-state', 'upload-state', 'no-birthdays-state', 'selection-state'];
+                states.forEach(id => {
+                    document.getElementById(id).classList.toggle('hidden', id !== stateId);
+                });
+            }
+
+            async loadData() {
+                this.showState('loading-state');
+                
+                try {
+                    const fileId = '1BsQR7Q1HfDx1u0QeHnzY8gvlac2iUYFA';
+                    const apiKey = 'AIzaSyAlxAoAyke0AAkiI3akNyWLNVwtoycjkgA';
+                    const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${apiKey}`;
+                    
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    
+                    const data = await response.json();
+                    this.processData(data);
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                    document.getElementById('error-message').textContent = 
+                        error.message || 'Не вдалося завантажити дані';
+                    this.showState('error-state');
+                }
+            }
+
+            processData(data) {
+                if (!Array.isArray(data.entries)) {
+                    throw new Error('Відсутній масив entries у JSON');
+                }
+
+                this.data = data.entries;
+                this.filterBirthdays();
+
+                if (this.filteredPeople.length === 0) {
+                    this.showState('no-birthdays-state');
+                    return;
+                }
+
+                this.renderSelectionList();
+                this.showState('selection-state');
+            }
+
+            filterBirthdays() {
+                const today = new Date();
+                const pastWeek = new Date(today);
+                pastWeek.setDate(today.getDate() - 6);
+                
+                // Normalize times for comparison
+                today.setHours(23, 59, 59, 999);
+                pastWeek.setHours(0, 0, 0, 0);
+
+                this.filteredPeople = this.data.filter(person => {
+                    if (!person.birthdate) return false;
+                    
+                    const [year, month, day] = person.birthdate.trim().split('-');
+                    const birthThisYear = new Date(today.getFullYear(), parseInt(month) - 1, parseInt(day));
+                    
+                    return birthThisYear >= pastWeek && birthThisYear <= today;
+                });
+
+                // Initially select all
+                this.selectedPeople = [...this.filteredPeople];
+            }
+
+            renderSelectionList() {
+                const listContainer = document.getElementById('person-list');
+                const countDisplay = document.getElementById('count-display');
+                
+                countDisplay.textContent = `Знайдено ${this.filteredPeople.length} іменинників`;
+                
+                listContainer.innerHTML = this.filteredPeople.map((person, index) => {
+                    const age = this.calculateAge(person.birthdate);
+                    const [year, month, day] = person.birthdate.trim().split('-');
+                    const birthDate = new Date(new Date().getFullYear(), parseInt(month) - 1, parseInt(day));
+                    
+                    return `
+                        <div class="person-item">
+                            <input type="checkbox" class="person-checkbox" 
+                                   id="person-${index}" 
+                                   checked 
+                                   onchange="app.updateSelection()">
+                            <div class="person-info">
+                                <div class="person-name">${person.lastname}</div>
+                                <div class="person-details">
+                                    ${birthDate.toLocaleDateString('uk-UA')} 
+                                    <label style="margin-left: 15px; font-size: 0.9em; color: #ffd700;">
+                                        <input type="checkbox" class="age-checkbox" 
+                                               id="age-${index}" 
+                                               style="margin-right: 5px; transform: scale(0.8);">
+                                        показати вік (${age} років)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                this.updateSelection();
+            }
+
+            calculateAge(birthdate) {
+                const birth = new Date(birthdate);
+                const today = new Date();
+                let age = today.getFullYear() - birth.getFullYear();
+                const monthDiff = today.getMonth() - birth.getMonth();
+                
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                    age--;
+                }
+                
+                return age;
+            }
+
+            updateSelection() {
+                const checkboxes = document.querySelectorAll('.person-checkbox');
+                this.selectedPeople = this.filteredPeople.filter((person, index) => {
+                    const checkbox = document.getElementById(`person-${index}`);
+                    return checkbox && checkbox.checked;
+                });
+
+                const startBtn = document.getElementById('start-btn');
+                const count = this.selectedPeople.length;
+                startBtn.textContent = `▶️ Почати показ (${count})`;
+                startBtn.disabled = count === 0;
+            }
+
+            selectAll() {
+                document.querySelectorAll('.person-checkbox').forEach(cb => cb.checked = true);
+                this.updateSelection();
+            }
+
+            deselectAll() {
+                document.querySelectorAll('.person-checkbox').forEach(cb => cb.checked = false);
+                this.updateSelection();
+            }
+
+            selectFile() {
+                document.getElementById('file-input').click();
+            }
+
+            handleFileSelect(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                if (!file.name.toLowerCase().endsWith('.json')) {
+                    alert('Файл має бути у форматі .json');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        this.processData(data);
+                    } catch (error) {
+                        document.getElementById('error-message').textContent = 
+                            'Помилка читання JSON-файлу: ' + error.message;
+                        this.showState('error-state');
+                    }
+                };
+                reader.readAsText(file);
+            }
+
+            showUpload() {
+                this.showState('upload-state');
+            }
+
+            startSlideshow() {
+                if (this.selectedPeople.length === 0) {
+                    alert('Оберіть хоча б одну особу для показу');
+                    return;
+                }
+
+                // Request fullscreen if option is checked
+                const fullscreenCheckbox = document.getElementById('fullscreen-checkbox');
+                if (fullscreenCheckbox.checked) {
+                    this.requestFullscreen();
+                }
+
+                this.buildSlides();
+                document.getElementById('slider').style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+
+            buildSlides() {
+                const container = document.getElementById('slides-container');
+                container.innerHTML = '';
+                this.slides = [];
+                this.currentSlide = 0;
+
+                // Create slides with 2 people each
+                for (let i = 0; i < this.selectedPeople.length; i += 2) {
+                    const slide = document.createElement('div');
+                    slide.className = 'slide';
+
+                    const person1 = this.selectedPeople[i];
+                    const person2 = this.selectedPeople[i + 1];
+
+                    slide.appendChild(this.createBirthdayCard(person1));
+                    
+                    if (person2) {
+                        slide.appendChild(this.createBirthdayCard(person2));
+                    } else {
+                        slide.firstChild.classList.add('single');
+                    }
+
+                    container.appendChild(slide);
+                    this.slides.push(slide);
+                }
+
+                this.updateSlidePosition();
+            }
+
+            createBirthdayCard(person) {
+                const card = document.createElement('div');
+                card.className = 'birthday-card';
+
+                const age = this.calculateAge(person.birthdate);
+                const birthDate = new Date(person.birthdate);
+                const day = birthDate.getDate();
+                const monthName = birthDate.toLocaleDateString('uk-UA', { month: 'long' });
+                
+                // Check if age should be shown for this person
+                const personIndex = this.filteredPeople.indexOf(person);
+                const ageCheckbox = document.getElementById(`age-${personIndex}`);
+                const showAge = ageCheckbox && ageCheckbox.checked;
+
+                card.innerHTML = `
+                    ${person.id ? 
+                        `<img class="birthday-image" 
+                             src="https://drive.google.com/thumbnail?id=${person.id}&sz=w800" 
+                             alt="${person.lastname}"
+                             onerror="this.outerHTML='<div class=\\"birthday-image\\">👤</div>'">` :
+                        '<div class="birthday-image">👤</div>'
+                    }
+                    <div class="birthday-info">
+                        <div class="birthday-name">${person.lastname}</div>
+                        <div class="birthday-details">${day} ${monthName}${showAge ? `, ${age} років` : ''}</div>
+                    </div>
+                `;
+
+                return card;
+            }
+
+            updateSlidePosition() {
+                const container = document.getElementById('slides-container');
+                container.style.transform = `translateX(-${this.currentSlide * 100}%)`;
+            }
+
+            nextSlide() {
+                this.currentSlide = (this.currentSlide + 1) % this.slides.length;
+                this.updateSlidePosition();
+            }
+
+            prevSlide() {
+                this.currentSlide = (this.currentSlide - 1 + this.slides.length) % this.slides.length;
+                this.updateSlidePosition();
+            }
+
+            exitSlideshow() {
+                document.getElementById('slider').style.display = 'none';
+                document.body.style.overflow = 'auto';
+                
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                }
+            }
+
+            requestFullscreen() {
+                const element = document.documentElement;
+                if (element.requestFullscreen) {
+                    element.requestFullscreen();
+                } else if (element.webkitRequestFullscreen) {
+                    element.webkitRequestFullscreen();
+                } else if (element.msRequestFullscreen) {
+                    element.msRequestFullscreen();
+                }
+            }
+        }
+
+        // Initialize app
+        const app = new BirthdayApp();
+    </script>
 </body>
 </html>
