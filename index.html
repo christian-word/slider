@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
@@ -146,7 +146,57 @@
             transform: scale(1.3);
         }
 
-        /* Slider Styles */
+        .effects-options {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            text-align: left;
+        }
+
+        .effects-options .title {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .effect-option {
+            margin: 10px 0;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .effect-option input {
+            margin-right: 10px;
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+        .effect-option label {
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .card-template-selector {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            display: none;
+        }
+
+        .template-option {
+            display: inline-block;
+            margin: 10px;
+            cursor: pointer;
+        }
+
+        .template-option input {
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
+
         .slider {
             position: fixed;
             top: 0;
@@ -187,6 +237,19 @@
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.3);
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            animation: cardAppear 0.8s ease-out forwards;
+        }
+
+        @keyframes cardAppear {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         .birthday-card.single {
@@ -197,7 +260,7 @@
         .birthday-image {
             width: 100%;
             height: 80%;
-            object-fit: cover;
+            object-fit: contain;
             background: rgba(255, 255, 255, 0.1);
             display: flex;
             align-items: center;
@@ -219,10 +282,28 @@
         }
 
         .birthday-name {
-            font-size: 2.8em;
+            font-size: clamp(1.5em, 5vw, 2.8em);
             font-weight: 700;
-            color: #ffd700;
+            background: linear-gradient(90deg, #ffd700, #ffed4e, #ff6b6b, #ffed4e, #ffd700);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             line-height: 1.1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 10px;
+            animation: gradientShift 4s linear infinite;
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% center;
+            }
+            100% {
+                background-position: 300% center;
+            }
         }
 
         .birthday-details {
@@ -284,6 +365,163 @@
             transform: scale(1.1);
         }
 
+        .slide-indicator {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 1001;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px 20px;
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .indicator-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .indicator-dot:hover {
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(1.2);
+        }
+
+        .indicator-dot.active {
+            background: #ffd700;
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.3);
+        }
+
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ffd700;
+            animation: confettiFall 3s linear forwards;
+        }
+
+        @keyframes confettiFall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .firework {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            animation: fireworkExplode 1s ease-out forwards;
+        }
+
+        @keyframes fireworkExplode {
+            0% {
+                transform: translate(0, 0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--x), var(--y));
+                opacity: 0;
+            }
+        }
+
+        .flash-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1003;
+        }
+
+        .flash-overlay.active {
+            animation: flashEffect 0.4s ease-out;
+        }
+
+        @keyframes flashEffect {
+            0% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 0.7;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .star {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            animation: starFall 3s linear forwards;
+            pointer-events: none;
+        }
+
+        .star::before {
+            content: '★';
+            font-size: 20px;
+            position: absolute;
+            animation: starRotate 2s linear infinite;
+        }
+
+        @keyframes starRotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes starFall {
+            to {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+        }
+
+        .heart {
+            position: absolute;
+            font-size: 25px;
+            animation: heartFall 4s ease-in forwards;
+            pointer-events: none;
+        }
+
+        @keyframes heartFall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(180deg) scale(0.5);
+                opacity: 0;
+            }
+        }
+
         .error-icon {
             color: #ff6b6b;
             font-size: 3em;
@@ -331,14 +569,12 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Loading State -->
         <div id="loading-state" class="card">
             <div class="loading-icon">🎂</div>
             <div class="title">Завантаження іменинників...</div>
             <div class="subtitle">Будь ласка, зачекайте</div>
         </div>
 
-        <!-- Error State -->
         <div id="error-state" class="card hidden">
             <div class="error-icon">⚠️</div>
             <div class="title">Помилка завантаження</div>
@@ -349,7 +585,6 @@
             </div>
         </div>
 
-        <!-- Upload State -->
         <div id="upload-state" class="card hidden">
             <div class="upload-area" onclick="app.selectFile()">
                 <div style="font-size: 3em; margin-bottom: 20px;">📁</div>
@@ -359,14 +594,12 @@
             <input type="file" id="file-input" accept=".json" style="display: none;">
         </div>
 
-        <!-- No Birthdays State -->
         <div id="no-birthdays-state" class="card hidden">
             <div style="font-size: 3em; margin-bottom: 20px;">😔</div>
             <div class="title">Немає іменинників цього тижня</div>
             <button class="btn" onclick="app.loadData()">🔄 Оновити</button>
         </div>
 
-        <!-- Selection State -->
         <div id="selection-state" class="card hidden">
             <div class="title">Іменинники тижня</div>
             <div class="subtitle" id="count-display"></div>
@@ -377,6 +610,30 @@
             </div>
 
             <div class="person-list" id="person-list"></div>
+
+            <div class="effects-options">
+                <div class="title">✨ Візуальні ефекти</div>
+                <div class="effect-option">
+                    <input type="checkbox" id="effect-confetti" checked>
+                    <label for="effect-confetti">🎊 Конфетті при старті</label>
+                </div>
+                <div class="effect-option">
+                    <input type="checkbox" id="effect-fireworks" checked>
+                    <label for="effect-fireworks">🎆 Феєрверки при переході</label>
+                </div>
+                <div class="effect-option">
+                    <input type="checkbox" id="effect-flash" checked>
+                    <label for="effect-flash">⚡ Спалах при переході</label>
+                </div>
+                <div class="effect-option">
+                    <input type="checkbox" id="effect-stars" checked>
+                    <label for="effect-stars">✨ Падаючі зірки</label>
+                </div>
+                <div class="effect-option">
+                    <input type="checkbox" id="effect-hearts" checked>
+                    <label for="effect-hearts">❤️ Падаючі серця</label>
+                </div>
+            </div>
 
             <div class="fullscreen-option">
                 <label>
@@ -391,14 +648,16 @@
         </div>
     </div>
 
-    <!-- Slider -->
     <div class="slider" id="slider">
         <button class="close-btn" onclick="app.exitSlideshow()">✕</button>
+        <div class="flash-overlay" id="flash-overlay"></div>
+        <div class="confetti-container" id="confetti-container"></div>
         <div class="slides-container" id="slides-container"></div>
         <div class="nav-buttons">
             <button class="nav-btn" onclick="app.prevSlide()">‹</button>
             <button class="nav-btn" onclick="app.nextSlide()">›</button>
         </div>
+        <div class="slide-indicator" id="slide-indicator"></div>
     </div>
 
     <script>
@@ -409,6 +668,14 @@
                 this.selectedPeople = [];
                 this.currentSlide = 0;
                 this.slides = [];
+                this.cardTemplate = 'vertical';
+                this.effects = {
+                    confetti: true,
+                    fireworks: true,
+                    flash: true,
+                    stars: true,
+                    hearts: true
+                };
                 
                 this.init();
             }
@@ -416,13 +683,13 @@
             init() {
                 this.setupEventListeners();
                 this.loadData();
+                this.loadSettings();
             }
 
             setupEventListeners() {
                 const fileInput = document.getElementById('file-input');
                 fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
 
-                // Keyboard navigation
                 document.addEventListener('keydown', (e) => {
                     if (document.getElementById('slider').style.display !== 'none') {
                         if (e.key === 'ArrowLeft') this.prevSlide();
@@ -431,7 +698,6 @@
                     }
                 });
 
-                // Drag and drop
                 const uploadArea = document.querySelector('.upload-area');
                 if (uploadArea) {
                     uploadArea.addEventListener('dragover', (e) => e.preventDefault());
@@ -440,6 +706,17 @@
                         this.handleFileSelect({ target: { files: e.dataTransfer.files } });
                     });
                 }
+
+                // Effects checkboxes
+                ['confetti', 'fireworks', 'flash', 'stars', 'hearts'].forEach(effect => {
+                    const checkbox = document.getElementById(`effect-${effect}`);
+                    if (checkbox) {
+                        checkbox.addEventListener('change', (e) => {
+                            this.effects[effect] = e.target.checked;
+                            this.saveSettings();
+                        });
+                    }
+                });
             }
 
             showState(stateId) {
@@ -485,6 +762,7 @@
 
                 this.renderSelectionList();
                 this.showState('selection-state');
+                this.restoreSelection();
             }
 
             filterBirthdays() {
@@ -492,7 +770,6 @@
                 const pastWeek = new Date(today);
                 pastWeek.setDate(today.getDate() - 6);
                 
-                // Normalize times for comparison
                 today.setHours(23, 59, 59, 999);
                 pastWeek.setHours(0, 0, 0, 0);
 
@@ -505,7 +782,6 @@
                     return birthThisYear >= pastWeek && birthThisYear <= today;
                 });
 
-                // Initially select all
                 this.selectedPeople = [...this.filteredPeople];
             }
 
@@ -524,6 +800,7 @@
                         <div class="person-item">
                             <input type="checkbox" class="person-checkbox" 
                                    id="person-${index}" 
+                                   data-birthdate="${person.birthdate}"
                                    checked 
                                    onchange="app.updateSelection()">
                             <div class="person-info">
@@ -559,7 +836,6 @@
             }
 
             updateSelection() {
-                const checkboxes = document.querySelectorAll('.person-checkbox');
                 this.selectedPeople = this.filteredPeople.filter((person, index) => {
                     const checkbox = document.getElementById(`person-${index}`);
                     return checkbox && checkbox.checked;
@@ -569,6 +845,8 @@
                 const count = this.selectedPeople.length;
                 startBtn.textContent = `▶️ Почати показ (${count})`;
                 startBtn.disabled = count === 0;
+
+                this.saveSettings();
             }
 
             selectAll() {
@@ -612,13 +890,70 @@
                 this.showState('upload-state');
             }
 
+            saveSettings() {
+                const selectedIds = [];
+                document.querySelectorAll('.person-checkbox:checked').forEach(cb => {
+                    selectedIds.push(cb.dataset.birthdate);
+                });
+
+                const settings = {
+                    selectedIds: selectedIds,
+                    effects: this.effects
+                };
+                
+                try {
+                    const savedData = JSON.stringify(settings);
+                    document.cookie = `birthdaySettings=${encodeURIComponent(savedData)}; max-age=2592000; path=/`;
+                } catch (e) {
+                    console.log('Cannot save settings');
+                }
+            }
+
+            loadSettings() {
+                try {
+                    const cookies = document.cookie.split(';');
+                    const settingsCookie = cookies.find(c => c.trim().startsWith('birthdaySettings='));
+                    if (settingsCookie) {
+                        const settings = JSON.parse(decodeURIComponent(settingsCookie.split('=')[1]));
+                        this.savedSelectedIds = settings.selectedIds || [];
+                        
+                        if (settings.effects) {
+                            this.effects = { ...this.effects, ...settings.effects };
+                            
+                            setTimeout(() => {
+                                ['confetti', 'fireworks', 'flash', 'stars', 'hearts'].forEach(effect => {
+                                    const checkbox = document.getElementById(`effect-${effect}`);
+                                    if (checkbox) {
+                                        checkbox.checked = this.effects[effect];
+                                    }
+                                });
+                            }, 100);
+                        }
+                    }
+                } catch (e) {
+                    console.log('Cannot load settings');
+                }
+            }
+
+            restoreSelection() {
+                if (this.savedSelectedIds && this.savedSelectedIds.length > 0) {
+                    document.querySelectorAll('.person-checkbox').forEach(cb => {
+                        if (this.savedSelectedIds.includes(cb.dataset.birthdate)) {
+                            cb.checked = true;
+                        } else {
+                            cb.checked = false;
+                        }
+                    });
+                    this.updateSelection();
+                }
+            }
+
             startSlideshow() {
                 if (this.selectedPeople.length === 0) {
                     alert('Оберіть хоча б одну особу для показу');
                     return;
                 }
 
-                // Request fullscreen if option is checked
                 const fullscreenCheckbox = document.getElementById('fullscreen-checkbox');
                 if (fullscreenCheckbox.checked) {
                     this.requestFullscreen();
@@ -627,6 +962,16 @@
                 this.buildSlides();
                 document.getElementById('slider').style.display = 'block';
                 document.body.style.overflow = 'hidden';
+                
+                if (this.effects.confetti) {
+                    this.createConfetti();
+                }
+                if (this.effects.stars) {
+                    this.startStars();
+                }
+                if (this.effects.hearts) {
+                    this.startHearts();
+                }
             }
 
             buildSlides() {
@@ -635,7 +980,6 @@
                 this.slides = [];
                 this.currentSlide = 0;
 
-                // Create slides with 2 people each
                 for (let i = 0; i < this.selectedPeople.length; i += 2) {
                     const slide = document.createElement('div');
                     slide.className = 'slide';
@@ -643,10 +987,10 @@
                     const person1 = this.selectedPeople[i];
                     const person2 = this.selectedPeople[i + 1];
 
-                    slide.appendChild(this.createBirthdayCard(person1));
+                    slide.appendChild(this.createBirthdayCard(person1, i * 0.2));
                     
                     if (person2) {
-                        slide.appendChild(this.createBirthdayCard(person2));
+                        slide.appendChild(this.createBirthdayCard(person2, i * 0.2 + 0.1));
                     } else {
                         slide.firstChild.classList.add('single');
                     }
@@ -655,19 +999,20 @@
                     this.slides.push(slide);
                 }
 
+                this.buildIndicator();
                 this.updateSlidePosition();
             }
 
-            createBirthdayCard(person) {
+            createBirthdayCard(person, delay) {
                 const card = document.createElement('div');
                 card.className = 'birthday-card';
+                card.style.animationDelay = `${delay}s`;
 
                 const age = this.calculateAge(person.birthdate);
                 const birthDate = new Date(person.birthdate);
                 const day = birthDate.getDate();
                 const monthName = birthDate.toLocaleDateString('uk-UA', { month: 'long' });
                 
-                // Check if age should be shown for this person
                 const personIndex = this.filteredPeople.indexOf(person);
                 const ageCheckbox = document.getElementById(`age-${personIndex}`);
                 const showAge = ageCheckbox && ageCheckbox.checked;
@@ -686,27 +1031,200 @@
                     </div>
                 `;
 
+                setTimeout(() => {
+                    const nameEl = card.querySelector('.birthday-name');
+                    if (nameEl) {
+                        this.adjustFontSize(nameEl);
+                    }
+                }, 0);
+
                 return card;
+            }
+
+            adjustFontSize(element) {
+                const container = element.parentElement;
+                let fontSize = parseFloat(window.getComputedStyle(element).fontSize);
+                
+                while (element.scrollWidth > container.clientWidth && fontSize > 20) {
+                    fontSize -= 2;
+                    element.style.fontSize = fontSize + 'px';
+                }
+            }
+
+            buildIndicator() {
+                const indicator = document.getElementById('slide-indicator');
+                indicator.innerHTML = '';
+                
+                this.slides.forEach((slide, index) => {
+                    const dot = document.createElement('div');
+                    dot.className = 'indicator-dot';
+                    if (index === 0) dot.classList.add('active');
+                    dot.addEventListener('click', () => this.goToSlide(index));
+                    indicator.appendChild(dot);
+                });
+            }
+
+            updateIndicator() {
+                const dots = document.querySelectorAll('.indicator-dot');
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === this.currentSlide);
+                });
+            }
+
+            goToSlide(index) {
+                this.currentSlide = index;
+                this.updateSlidePosition();
+                this.updateIndicator();
+                if (this.effects.fireworks) {
+                    this.createFireworks();
+                }
+                if (this.effects.flash) {
+                    this.createFlash();
+                }
             }
 
             updateSlidePosition() {
                 const container = document.getElementById('slides-container');
                 container.style.transform = `translateX(-${this.currentSlide * 100}%)`;
+                this.updateIndicator();
             }
 
             nextSlide() {
                 this.currentSlide = (this.currentSlide + 1) % this.slides.length;
                 this.updateSlidePosition();
+                if (this.effects.fireworks) {
+                    this.createFireworks();
+                }
+                if (this.effects.flash) {
+                    this.createFlash();
+                }
             }
 
             prevSlide() {
                 this.currentSlide = (this.currentSlide - 1 + this.slides.length) % this.slides.length;
                 this.updateSlidePosition();
+                if (this.effects.fireworks) {
+                    this.createFireworks();
+                }
+                if (this.effects.flash) {
+                    this.createFlash();
+                }
+            }
+
+            createConfetti() {
+                const container = document.getElementById('confetti-container');
+                const colors = ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#f7b731', '#5f27cd'];
+                
+                for (let i = 0; i < 50; i++) {
+                    setTimeout(() => {
+                        const confetti = document.createElement('div');
+                        confetti.className = 'confetti';
+                        confetti.style.left = Math.random() * 100 + '%';
+                        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                        confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                        confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                        container.appendChild(confetti);
+                        
+                        setTimeout(() => confetti.remove(), 3500);
+                    }, i * 50);
+                }
+            }
+
+            createFireworks() {
+                const container = document.getElementById('confetti-container');
+                const colors = ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#f7b731'];
+                
+                const x = Math.random() * 80 + 10;
+                const y = Math.random() * 60 + 20;
+                
+                for (let i = 0; i < 20; i++) {
+                    const firework = document.createElement('div');
+                    firework.className = 'firework';
+                    firework.style.left = x + '%';
+                    firework.style.top = y + '%';
+                    firework.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    const angle = (Math.PI * 2 * i) / 20;
+                    const distance = 50 + Math.random() * 50;
+                    const dx = Math.cos(angle) * distance;
+                    const dy = Math.sin(angle) * distance;
+                    
+                    firework.style.setProperty('--x', dx + 'px');
+                    firework.style.setProperty('--y', dy + 'px');
+                    
+                    container.appendChild(firework);
+                    setTimeout(() => firework.remove(), 1000);
+                }
+            }
+
+            createFlash() {
+                const flash = document.getElementById('flash-overlay');
+                flash.classList.remove('active');
+                setTimeout(() => {
+                    flash.classList.add('active');
+                }, 10);
+                setTimeout(() => {
+                    flash.classList.remove('active');
+                }, 400);
+            }
+
+            startStars() {
+                this.starsInterval = setInterval(() => {
+                    if (this.effects.stars && document.getElementById('slider').style.display !== 'none') {
+                        this.createStar();
+                    }
+                }, 300);
+            }
+
+            createStar() {
+                const container = document.getElementById('confetti-container');
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                const colors = ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#f7b731', '#5f27cd', '#ff9ff3', '#54a0ff'];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                star.style.left = Math.random() * 100 + '%';
+                star.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                star.querySelector = star.appendChild(document.createElement('span'));
+                star.innerHTML = '<span style="color: ' + randomColor + '">★</span>';
+                
+                container.appendChild(star);
+                setTimeout(() => star.remove(), 4000);
+            }
+
+            startHearts() {
+                this.heartsInterval = setInterval(() => {
+                    if (this.effects.hearts && document.getElementById('slider').style.display !== 'none') {
+                        this.createHeart();
+                    }
+                }, 500);
+            }
+
+            createHeart() {
+                const container = document.getElementById('confetti-container');
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.textContent = '❤️';
+                heart.style.left = Math.random() * 100 + '%';
+                heart.style.animationDuration = (Math.random() * 2 + 3) + 's';
+                container.appendChild(heart);
+                setTimeout(() => heart.remove(), 5000);
             }
 
             exitSlideshow() {
                 document.getElementById('slider').style.display = 'none';
                 document.body.style.overflow = 'auto';
+                
+                const container = document.getElementById('confetti-container');
+                container.innerHTML = '';
+                
+                if (this.starsInterval) {
+                    clearInterval(this.starsInterval);
+                }
+                if (this.heartsInterval) {
+                    clearInterval(this.heartsInterval);
+                }
                 
                 if (document.fullscreenElement) {
                     document.exitFullscreen();
@@ -725,7 +1243,6 @@
             }
         }
 
-        // Initialize app
         const app = new BirthdayApp();
     </script>
 </body>
