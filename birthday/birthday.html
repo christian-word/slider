@@ -1,0 +1,267 @@
+﻿<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:image" content="icoi.png">
+    <title>Іменинники тижня</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --gold: #fbbf24;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.4;
+            padding: 12px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 15px 0;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            margin: 20px 0 15px;
+            padding: 8px 12px;
+            background: rgba(56, 189, 248, 0.1);
+            border-left: 4px solid var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .count-badge {
+            background: var(--accent);
+            color: var(--bg);
+            font-size: 0.85rem;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        /* Увеличенная карточка */
+        .birthday-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: row; /* Фото слева, текст справа */
+            align-items: center;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        .photo-wrap {
+            width: 120px; /* Значительно больше */
+            height: 120px;
+            flex-shrink: 0;
+            background: #2d3748;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid var(--border);
+        }
+
+        .photo-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-wrap span { font-size: 3rem; }
+
+        .info {
+            padding: 15px;
+            flex-grow: 1;
+        }
+
+        .name {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--gold);
+            margin-bottom: 4px;
+        }
+
+        .date-info {
+            color: var(--text-main);
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-bottom: 2px;
+        }
+
+        .age-info {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            border: 1px dashed var(--border);
+        }
+
+        #loader { text-align: center; padding: 100px 0; }
+        .spinner {
+            width: 50px; height: 50px;
+            border: 5px solid var(--border);
+            border-top: 5px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🎂 Іменинники</h1>
+    </div>
+
+    <div id="loader">
+        <div class="spinner"></div>
+        <p>Шукаємо іменинників...</p>
+    </div>
+
+    <div id="content" style="display: none;">
+        <div class="section-title">
+            Цього тижня <span id="count-current" class="count-badge">0</span>
+        </div>
+        <div id="list-current"></div>
+
+        <div class="section-title">
+            Наступного тижня <span id="count-next" class="count-badge">0</span>
+        </div>
+        <div id="list-next"></div>
+    </div>
+
+    <div id="error" style="display: none; color: #f87171; text-align: center; padding: 20px;"></div>
+
+    <script>
+        class BirthdayMobileApp {
+            constructor() {
+                this.apiUrl = 'https://www.googleapis.com/drive/v3/files/1BsQR7Q1HfDx1u0QeHnzY8gvlac2iUYFA?alt=media&key=AIzaSyAlxAoAyke0AAkiI3akNyWLNVwtoycjkgA';
+                this.init();
+            }
+
+            async init() {
+                try {
+                    const response = await fetch(this.apiUrl);
+                    if (!response.ok) throw new Error('Помилка мережі');
+                    const data = await response.json();
+                    this.render(data.entries);
+                } catch (err) {
+                    document.getElementById('loader').style.display = 'none';
+                    const errEl = document.getElementById('error');
+                    errEl.style.display = 'block';
+                    errEl.textContent = "Не вдалося завантажити дані. Перевірте інтернет.";
+                }
+            }
+
+            isDateInRage(dateStr, start, end) {
+                const [y, m, d] = dateStr.split('-').map(Number);
+                const currentYear = new Date().getFullYear();
+                const birthday = new Date(currentYear, m - 1, d);
+                return birthday >= start && birthday <= end;
+            }
+
+            getWeekRanges() {
+                const now = new Date();
+                now.setHours(0,0,0,0);
+                const day = now.getDay() || 7;
+                
+                const startCurrent = new Date(now);
+                startCurrent.setDate(now.getDate() - (day - 1));
+                
+                const endCurrent = new Date(startCurrent);
+                endCurrent.setDate(startCurrent.getDate() + 6);
+                endCurrent.setHours(23,59,59,999);
+
+                const startNext = new Date(endCurrent);
+                startNext.setDate(endCurrent.getDate() + 1);
+                startNext.setHours(0,0,0,0);
+
+                const endNext = new Date(startNext);
+                endNext.setDate(startNext.getDate() + 6);
+                endNext.setHours(23,59,59,999);
+
+                return { startCurrent, endCurrent, startNext, endNext };
+            }
+
+            calcAge(bd) {
+                const [y, m, d] = bd.split('-').map(Number);
+                const birth = new Date(y, m - 1, d);
+                const today = new Date();
+                let age = today.getFullYear() - birth.getFullYear();
+                if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--;
+                return age;
+            }
+
+            createCard(p) {
+                const age = this.calcAge(p.birthdate);
+                const [y, m, d] = p.birthdate.split('-');
+                const month = new Date(2000, m - 1, d).toLocaleDateString('uk-UA', { month: 'long' });
+                
+                // Используем sz=w400 для четкости при крупном размере
+                const photo = p.id 
+                    ? `<img src="https://drive.google.com/thumbnail?id=${p.id}&sz=w400" alt="photo" onerror="this.outerHTML='<span>👤</span>'">`
+                    : `<span>👤</span>`;
+
+                return `
+                    <div class="birthday-card">
+                        <div class="photo-wrap">${photo}</div>
+                        <div class="info">
+                            <div class="name">${p.lastname}</div>
+                            <div class="date-info">${parseInt(d)} ${month}</div>
+                            <div class="age-info">Виповнюється ${age} р.</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            render(entries) {
+                const r = this.getWeekRanges();
+                const current = entries.filter(p => this.isDateInRage(p.birthdate, r.startCurrent, r.endCurrent));
+                const next = entries.filter(p => this.isDateInRage(p.birthdate, r.startNext, r.endNext));
+
+                const sortByDay = (a, b) => a.birthdate.split('-')[2] - b.birthdate.split('-')[2];
+                current.sort(sortByDay);
+                next.sort(sortByDay);
+
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+
+                document.getElementById('count-current').textContent = current.length;
+                document.getElementById('count-next').textContent = next.length;
+
+                document.getElementById('list-current').innerHTML = current.length 
+                    ? current.map(p => this.createCard(p)).join('')
+                    : '<div class="empty-state">На цьому тижні свят немає</div>';
+
+                document.getElementById('list-next').innerHTML = next.length 
+                    ? next.map(p => this.createCard(p)).join('')
+                    : '<div class="empty-state">На наступному тижні свят немає</div>';
+            }
+        }
+
+        new BirthdayMobileApp();
+    </script>
+</body>
+</html>
