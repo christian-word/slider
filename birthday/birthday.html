@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="og:image" content="icoi.png">
     <title>Іменинники тижня</title>
     <style>
         :root {
@@ -26,10 +25,7 @@
             padding: 12px;
         }
 
-        .header {
-            text-align: center;
-            padding: 15px 0;
-        }
+        .header { text-align: center; padding: 15px 0; }
 
         .section-title {
             font-size: 1.2rem;
@@ -52,22 +48,41 @@
             font-weight: bold;
         }
 
-        /* Увеличенная карточка */
         .birthday-card {
             background: var(--card-bg);
             border-radius: 20px;
             margin-bottom: 16px;
             display: flex;
-            flex-direction: row; /* Фото слева, текст справа */
             align-items: center;
             overflow: hidden;
             border: 1px solid var(--border);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        /* Індикатор СЬОГОДНІ */
+        .is-today {
+            border: 2px solid var(--gold) !important;
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
+        }
+
+        .is-today::after {
+            content: "СЬОГОДНІ 🎂";
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: var(--gold);
+            color: #000;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 8px;
         }
 
         .photo-wrap {
-            width: 120px; /* Значительно больше */
-            height: 120px;
+            width: 110px;
+            height: 110px;
             flex-shrink: 0;
             background: #2d3748;
             display: flex;
@@ -76,36 +91,31 @@
             border-right: 1px solid var(--border);
         }
 
-        .photo-wrap img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .photo-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-wrap span { font-size: 2.5rem; }
+
+        .info { padding: 15px; flex-grow: 1; }
+        .name { font-weight: 700; font-size: 1.15rem; color: var(--gold); margin-bottom: 2px; }
+        .date-info { color: var(--text-main); font-weight: 500; font-size: 1.05rem; }
+        .age-info { color: var(--text-muted); font-size: 0.9rem; }
+
+        /* Скелетон */
+        .skeleton {
+            background: linear-gradient(90deg, var(--card-bg) 25%, #2d3748 50%, var(--card-bg) 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
         }
 
-        .photo-wrap span { font-size: 3rem; }
-
-        .info {
-            padding: 15px;
-            flex-grow: 1;
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
 
-        .name {
-            font-weight: 700;
-            font-size: 1.25rem;
-            color: var(--gold);
-            margin-bottom: 4px;
-        }
-
-        .date-info {
-            color: var(--text-main);
-            font-weight: 500;
-            font-size: 1.1rem;
-            margin-bottom: 2px;
-        }
-
-        .age-info {
-            color: var(--text-muted);
-            font-size: 0.95rem;
+        .skeleton-card {
+            height: 112px;
+            border-radius: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
         }
 
         .empty-state {
@@ -116,17 +126,6 @@
             border-radius: 12px;
             border: 1px dashed var(--border);
         }
-
-        #loader { text-align: center; padding: 100px 0; }
-        .spinner {
-            width: 50px; height: 50px;
-            border: 5px solid var(--border);
-            border-top: 5px solid var(--accent);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -136,8 +135,9 @@
     </div>
 
     <div id="loader">
-        <div class="spinner"></div>
-        <p>Шукаємо іменинників...</p>
+        <div class="skeleton-card skeleton"></div>
+        <div class="skeleton-card skeleton"></div>
+        <div class="skeleton-card skeleton"></div>
     </div>
 
     <div id="content" style="display: none;">
@@ -171,15 +171,8 @@
                     document.getElementById('loader').style.display = 'none';
                     const errEl = document.getElementById('error');
                     errEl.style.display = 'block';
-                    errEl.textContent = "Не вдалося завантажити дані. Перевірте інтернет.";
+                    errEl.textContent = "Не вдалося завантажити дані.";
                 }
-            }
-
-            isDateInRage(dateStr, start, end) {
-                const [y, m, d] = dateStr.split('-').map(Number);
-                const currentYear = new Date().getFullYear();
-                const birthday = new Date(currentYear, m - 1, d);
-                return birthday >= start && birthday <= end;
             }
 
             getWeekRanges() {
@@ -205,6 +198,17 @@
                 return { startCurrent, endCurrent, startNext, endNext };
             }
 
+            isDateInRage(dateStr, start, end) {
+                const [, m, d] = dateStr.split('-').map(Number);
+                const currentYear = new Date().getFullYear();
+                
+                // Перевіряємо поточний, минулий та наступний рік для переходу 31.12-01.01
+                return [currentYear - 1, currentYear, currentYear + 1].some(y => {
+                    const bday = new Date(y, m - 1, d);
+                    return bday >= start && bday <= end;
+                });
+            }
+
             calcAge(bd) {
                 const [y, m, d] = bd.split('-').map(Number);
                 const birth = new Date(y, m - 1, d);
@@ -216,20 +220,22 @@
 
             createCard(p) {
                 const age = this.calcAge(p.birthdate);
-                const [y, m, d] = p.birthdate.split('-');
+                const [, m, d] = p.birthdate.split('-').map(Number);
                 const month = new Date(2000, m - 1, d).toLocaleDateString('uk-UA', { month: 'long' });
                 
-                // Используем sz=w400 для четкости при крупном размере
+                const today = new Date();
+                const isToday = today.getDate() === d && (today.getMonth() + 1) === m;
+
                 const photo = p.id 
                     ? `<img src="https://drive.google.com/thumbnail?id=${p.id}&sz=w400" alt="photo" onerror="this.outerHTML='<span>👤</span>'">`
                     : `<span>👤</span>`;
 
                 return `
-                    <div class="birthday-card">
+                    <div class="birthday-card ${isToday ? 'is-today' : ''}">
                         <div class="photo-wrap">${photo}</div>
                         <div class="info">
                             <div class="name">${p.lastname}</div>
-                            <div class="date-info">${parseInt(d)} ${month}</div>
+                            <div class="date-info">${d} ${month}</div>
                             <div class="age-info">Виповнюється ${age} р.</div>
                         </div>
                     </div>
@@ -238,12 +244,23 @@
 
             render(entries) {
                 const r = this.getWeekRanges();
-                const current = entries.filter(p => this.isDateInRage(p.birthdate, r.startCurrent, r.endCurrent));
-                const next = entries.filter(p => this.isDateInRage(p.birthdate, r.startNext, r.endNext));
 
-                const sortByDay = (a, b) => a.birthdate.split('-')[2] - b.birthdate.split('-')[2];
-                current.sort(sortByDay);
-                next.sort(sortByDay);
+                const processList = (list, start, end) => {
+                    return list
+                        .filter(p => this.isDateInRage(p.birthdate, start, end))
+                        .sort((a, b) => {
+                            const getCompDate = (dateStr) => {
+                                const [, mm, dd] = dateStr.split('-').map(Number);
+                                let d = new Date(start.getFullYear(), mm - 1, dd);
+                                if (d < start) d.setFullYear(start.getFullYear() + 1);
+                                return d;
+                            };
+                            return getCompDate(a.birthdate) - getCompDate(b.birthdate);
+                        });
+                };
+
+                const current = processList(entries, r.startCurrent, r.endCurrent);
+                const next = processList(entries, r.startNext, r.endNext);
 
                 document.getElementById('loader').style.display = 'none';
                 document.getElementById('content').style.display = 'block';
