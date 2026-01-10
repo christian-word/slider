@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
@@ -48,7 +48,6 @@
             font-weight: bold;
         }
 
-        /* Заголовки груп по дням */
         .day-group-title {
             color: var(--accent);
             font-size: 0.85rem;
@@ -68,7 +67,6 @@
             margin-left: 12px;
         }
 
-        /* Картка іменинника */
         .birthday-card {
             background: var(--card-bg);
             border-radius: 20px;
@@ -117,7 +115,6 @@
         .name { font-weight: 700; font-size: 1.1rem; color: var(--gold); margin-bottom: 2px; }
         .age-info { color: var(--text-muted); font-size: 0.9rem; }
 
-        /* Скелетон */
         .skeleton {
             background: linear-gradient(90deg, var(--card-bg) 25%, #2d3748 50%, var(--card-bg) 75%);
             background-size: 200% 100%;
@@ -143,6 +140,116 @@
             background: rgba(255,255,255,0.02);
             border-radius: 12px;
             border: 1px dashed var(--border);
+        }
+
+        .greet-btn {
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: all 0.2s;
+        }
+
+        .greet-btn:active {
+            transform: scale(0.95);
+            background: #0ea5e9;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--gold);
+        }
+
+        .phone-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .phone-item {
+            background: var(--bg);
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .phone-item:active {
+            transform: scale(0.98);
+            background: #1e293b;
+        }
+
+        .phone-icon {
+            font-size: 1.4rem;
+        }
+
+        .phone-number {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .phone-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .modal-close {
+            background: var(--border);
+            color: var(--text-main);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            margin-top: 16px;
+            width: 100%;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .no-phones {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
         }
     </style>
 </head>
@@ -171,6 +278,14 @@
     </div>
 
     <div id="error" style="display: none; color: #f87171; text-align: center; padding: 20px;"></div>
+
+    <div id="phoneModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header" id="modalName"></div>
+            <div class="phone-list" id="phoneList"></div>
+            <button class="modal-close" onclick="closePhoneModal()">Закрити</button>
+        </div>
+    </div>
 
     <script>
         class BirthdayMobileApp {
@@ -244,12 +359,17 @@
                     ? `<img src="https://drive.google.com/thumbnail?id=${p.id}&sz=w400" alt="photo" onerror="this.outerHTML='<span>👤</span>'">`
                     : `<span>👤</span>`;
 
+                const greetBtn = p.phone 
+                    ? `<button class="greet-btn" onclick="showPhoneModal('${p.lastname.replace(/'/g, "\\'")}', '${p.phone.replace(/'/g, "\\'")}')">📞 Привітати</button>`
+                    : '';
+
                 return `
                     <div class="birthday-card ${isToday ? 'is-today' : ''}">
                         <div class="photo-wrap">${photo}</div>
                         <div class="info">
                             <div class="name">${p.lastname}</div>
                             <div class="age-info">Вік ${age} р.</div>
+                            ${greetBtn}
                         </div>
                     </div>
                 `;
@@ -310,6 +430,114 @@
         }
 
         new BirthdayMobileApp();
+
+        function parsePhones(phoneStr) {
+            if (!phoneStr) return [];
+            
+            const parts = phoneStr.split(',').map(s => s.trim());
+            const phones = [];
+
+            parts.forEach(part => {
+                const digits = part.replace(/\D/g, '');
+                
+                let label = '';
+                let number = '';
+
+                // Проверяем только мобильные
+                if (digits.length === 10 && digits.startsWith('0')) {
+                    number = digits;
+                    if (part.toLowerCase().includes('м.т') || part.toLowerCase().includes('моб')) {
+                        label = 'Мобільний';
+                    }
+                } else if (digits.length === 6 || digits.length === 7) {
+                    // Городской
+                    number = digits;
+                    label = 'Міський';
+                } else if (digits.length > 0) {
+                    number = digits;
+                }
+
+                // Извлекаем весь текст после номера как метку
+                if (number && !label) {
+                    const numIndex = part.indexOf(number.slice(0, 3));
+                    if (numIndex !== -1) {
+                        const afterNum = part.substring(numIndex + number.length).trim();
+                        if (afterNum) {
+                            label = afterNum;
+                        }
+                    }
+                    // Или текст до номера
+                    if (!label) {
+                        const beforeNum = part.replace(number, '').replace(/[\d\-\s()]/g, '').trim();
+                        if (beforeNum && beforeNum !== 'м.т' && beforeNum !== 'моб') {
+                            label = beforeNum;
+                        }
+                    }
+                }
+
+                if (number) {
+                    phones.push({ number, label: label || '', original: part });
+                }
+            });
+
+            return phones;
+        }
+
+        function showPhoneModal(name, phoneStr) {
+            const modal = document.getElementById('phoneModal');
+            const modalName = document.getElementById('modalName');
+            const phoneList = document.getElementById('phoneList');
+
+            modalName.textContent = name;
+            
+            const phones = parsePhones(phoneStr);
+
+            if (phones.length === 0) {
+                phoneList.innerHTML = '<div class="no-phones">Телефони не знайдено</div>';
+            } else {
+                phoneList.innerHTML = phones.map(p => {
+                    const formattedNumber = formatPhoneNumber(p.number);
+                    const labelHtml = p.label ? `<div class="phone-label">${p.label}</div>` : '';
+                    
+                    return `
+                        <div class="phone-item" onclick="callPhone('${p.number}')">
+                            <div class="phone-icon">📱</div>
+                            <div>
+                                <div class="phone-number">${formattedNumber}</div>
+                                ${labelHtml}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            modal.classList.add('active');
+        }
+
+        function formatPhoneNumber(number) {
+            if (number.length === 10 && number.startsWith('0')) {
+                return `${number.slice(0, 3)} ${number.slice(3, 6)} ${number.slice(6, 8)} ${number.slice(8)}`;
+            } else if (number.length === 6) {
+                return `${number.slice(0, 2)}-${number.slice(2, 4)}-${number.slice(4)}`;
+            } else if (number.length === 7) {
+                return `${number.slice(0, 2)}-${number.slice(2, 4)}-${number.slice(4)}`;
+            }
+            return number;
+        }
+
+        function callPhone(number) {
+            window.location.href = `tel:${number}`;
+        }
+
+        function closePhoneModal() {
+            document.getElementById('phoneModal').classList.remove('active');
+        }
+
+        document.getElementById('phoneModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePhoneModal();
+            }
+        });
     </script>
 </body>
 </html>
