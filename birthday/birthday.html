@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
@@ -251,6 +251,32 @@
             padding: 20px;
             color: var(--text-muted);
         }
+/* Додай цей стиль у секцію <style> */
+.download-btn {
+    position: absolute;
+    bottom: 0px;     /* ← тут регулюєш висоту */
+    right: 0px;
+    background: rgba(15, 23, 42, 0.75);
+    color: #e2e8f0;
+    border: none;
+    width: 27px;
+    height: 27px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    opacity: 0.65;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.download-btn:active {
+    opacity: 1;
+    transform: scale(0.9);
+}
+
     </style>
 </head>
 <body>
@@ -287,257 +313,247 @@
         </div>
     </div>
 
-    <script>
-        class BirthdayMobileApp {
-            constructor() {
-                this.apiUrl = 'https://www.googleapis.com/drive/v3/files/1BsQR7Q1HfDx1u0QeHnzY8gvlac2iUYFA?alt=media&key=AIzaSyAlxAoAyke0AAkiI3akNyWLNVwtoycjkgA';
-                this.init();
-            }
+<script>
+    class BirthdayMobileApp {
+        constructor() {
+            this.apiUrl = 'https://www.googleapis.com/drive/v3/files/1BsQR7Q1HfDx1u0QeHnzY8gvlac2iUYFA?alt=media&key=AIzaSyAlxAoAyke0AAkiI3akNyWLNVwtoycjkgA';
+            this.init();
+        }
 
-            async init() {
-                try {
-                    const response = await fetch(this.apiUrl);
-                    if (!response.ok) throw new Error('Помилка завантаження');
-                    const data = await response.json();
-                    this.render(data.entries);
-                } catch (err) {
-                    document.getElementById('loader').style.display = 'none';
-                    const errEl = document.getElementById('error');
-                    errEl.style.display = 'block';
-                    errEl.textContent = "Не вдалося отримати дані. Перевірте підключення.";
-                }
-            }
-
-            getWeekRanges() {
-                const now = new Date();
-                now.setHours(0,0,0,0);
-                const day = now.getDay() || 7;
-                
-                const startCurrent = new Date(now);
-                startCurrent.setDate(now.getDate() - (day - 1));
-                
-                const endCurrent = new Date(startCurrent);
-                endCurrent.setDate(startCurrent.getDate() + 6);
-                endCurrent.setHours(23,59,59,999);
-
-                const startNext = new Date(endCurrent);
-                startNext.setDate(endCurrent.getDate() + 1);
-                startNext.setHours(0,0,0,0);
-
-                const endNext = new Date(startNext);
-                endNext.setDate(startNext.getDate() + 6);
-                endNext.setHours(23,59,59,999);
-
-                return { startCurrent, endCurrent, startNext, endNext };
-            }
-
-            isDateInRage(dateStr, start, end) {
-                const [, m, d] = dateStr.split('-').map(Number);
-                const currentYear = new Date().getFullYear();
-                return [currentYear - 1, currentYear, currentYear + 1].some(y => {
-                    const bday = new Date(y, m - 1, d);
-                    return bday >= start && bday <= end;
-                });
-            }
-
-            calcAge(bd) {
-                const [y, m, d] = bd.split('-').map(Number);
-                const birth = new Date(y, m - 1, d);
-                const today = new Date();
-                let age = today.getFullYear() - birth.getFullYear();
-                if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--;
-                return age;
-            }
-
-            createCard(p) {
-                const age = this.calcAge(p.birthdate);
-                const [, m, d] = p.birthdate.split('-').map(Number);
-                const today = new Date();
-                const isToday = today.getDate() === d && (today.getMonth() + 1) === m;
-
-                const photo = p.id 
-                    ? `<img src="https://drive.google.com/thumbnail?id=${p.id}&sz=w400" alt="photo" onerror="this.outerHTML='<span>👤</span>'">`
-                    : `<span>👤</span>`;
-
-                const greetBtn = p.phone 
-                    ? `<button class="greet-btn" onclick="showPhoneModal('${p.lastname.replace(/'/g, "\\'")}', '${p.phone.replace(/'/g, "\\'")}')">📞 Привітати</button>`
-                    : '';
-
-                return `
-                    <div class="birthday-card ${isToday ? 'is-today' : ''}">
-                        <div class="photo-wrap">${photo}</div>
-                        <div class="info">
-                            <div class="name">${p.lastname}</div>
-                            <div class="age-info">Вік ${age} р.</div>
-                            ${greetBtn}
-                        </div>
-                    </div>
-                `;
-            }
-
-            render(entries) {
-                const ranges = this.getWeekRanges();
-
-                const processList = (list, start, end) => {
-                    return list
-                        .filter(p => this.isDateInRage(p.birthdate, start, end))
-                        .sort((a, b) => {
-                            const getCompDate = (dateStr) => {
-                                const [, mm, dd] = dateStr.split('-').map(Number);
-                                let d = new Date(start.getFullYear(), mm - 1, dd);
-                                if (d < start) d.setFullYear(start.getFullYear() + 1);
-                                return d;
-                            };
-                            return getCompDate(a.birthdate) - getCompDate(b.birthdate);
-                        });
-                };
-
-                const groupByDay = (list) => {
-                    if (list.length === 0) return '';
-                    const groups = {};
-                    list.forEach(p => {
-                        const [, m, d] = p.birthdate.split('-').map(Number);
-                        const dateKey = `${d} ${new Date(2000, m - 1, d).toLocaleDateString('uk-UA', { month: 'long' })}`;
-                        if (!groups[dateKey]) groups[dateKey] = [];
-                        groups[dateKey].push(p);
-                    });
-
-                    let html = '';
-                    for (const [date, people] of Object.entries(groups)) {
-                        html += `<div class="day-group-title">${date}</div>`;
-                        html += people.map(p => this.createCard(p)).join('');
-                    }
-                    return html;
-                };
-
-                const currentData = processList(entries, ranges.startCurrent, ranges.endCurrent);
-                const nextData = processList(entries, ranges.startNext, ranges.endNext);
-
+        async init() {
+            try {
+                const response = await fetch(this.apiUrl);
+                if (!response.ok) throw new Error('Помилка завантаження');
+                const data = await response.json();
+                this.render(data.entries);
+            } catch (err) {
                 document.getElementById('loader').style.display = 'none';
-                document.getElementById('content').style.display = 'block';
-
-                document.getElementById('count-current').textContent = currentData.length;
-                document.getElementById('count-next').textContent = nextData.length;
-
-                document.getElementById('list-current').innerHTML = currentData.length 
-                    ? groupByDay(currentData)
-                    : '<div class="empty-state">На цьому тижні свят немає</div>';
-
-                document.getElementById('list-next').innerHTML = nextData.length 
-                    ? groupByDay(nextData)
-                    : '<div class="empty-state">На наступному тижні свят немає</div>';
+                const errEl = document.getElementById('error');
+                errEl.style.display = 'block';
+                errEl.textContent = "Не вдалося отримати дані. Перевірте підключення.";
             }
         }
 
-        new BirthdayMobileApp();
-
-        function parsePhones(phoneStr) {
-            if (!phoneStr) return [];
+        getWeekRanges() {
+            const now = new Date();
+            now.setHours(0,0,0,0);
+            const day = now.getDay() || 7;
             
-            const parts = phoneStr.split(',').map(s => s.trim());
-            const phones = [];
+            const startCurrent = new Date(now);
+            startCurrent.setDate(now.getDate() - (day - 1));
+            
+            const endCurrent = new Date(startCurrent);
+            endCurrent.setDate(startCurrent.getDate() + 6);
+            endCurrent.setHours(23,59,59,999);
 
-            parts.forEach(part => {
-                const digits = part.replace(/\D/g, '');
-                
-                let label = '';
-                let number = '';
+            const startNext = new Date(endCurrent);
+            startNext.setDate(endCurrent.getDate() + 1);
+            startNext.setHours(0,0,0,0);
 
-                // Проверяем только мобильные
-                if (digits.length === 10 && digits.startsWith('0')) {
-                    number = digits;
-                    if (part.toLowerCase().includes('м.т') || part.toLowerCase().includes('моб')) {
-                        label = 'Мобільний';
-                    }
-                } else if (digits.length === 6 || digits.length === 7) {
-                    // Городской
-                    number = digits;
-                    label = 'Міський';
-                } else if (digits.length > 0) {
-                    number = digits;
-                }
+            const endNext = new Date(startNext);
+            endNext.setDate(startNext.getDate() + 6);
+            endNext.setHours(23,59,59,999);
 
-                // Извлекаем весь текст после номера как метку
-                if (number && !label) {
-                    const numIndex = part.indexOf(number.slice(0, 3));
-                    if (numIndex !== -1) {
-                        const afterNum = part.substring(numIndex + number.length).trim();
-                        if (afterNum) {
-                            label = afterNum;
-                        }
-                    }
-                    // Или текст до номера
-                    if (!label) {
-                        const beforeNum = part.replace(number, '').replace(/[\d\-\s()]/g, '').trim();
-                        if (beforeNum && beforeNum !== 'м.т' && beforeNum !== 'моб') {
-                            label = beforeNum;
-                        }
-                    }
-                }
+            return { startCurrent, endCurrent, startNext, endNext };
+        }
 
-                if (number) {
-                    phones.push({ number, label: label || '', original: part });
-                }
+        isDateInRage(dateStr, start, end) {
+            const [, m, d] = dateStr.split('-').map(Number);
+            const currentYear = new Date().getFullYear();
+            return [currentYear - 1, currentYear, currentYear + 1].some(y => {
+                const bday = new Date(y, m - 1, d);
+                return bday >= start && bday <= end;
             });
-
-            return phones;
         }
 
-        function showPhoneModal(name, phoneStr) {
-            const modal = document.getElementById('phoneModal');
-            const modalName = document.getElementById('modalName');
-            const phoneList = document.getElementById('phoneList');
+        calcAge(bd) {
+            const [y, m, d] = bd.split('-').map(Number);
+            const birth = new Date(y, m - 1, d);
+            const today = new Date();
+            let age = today.getFullYear() - birth.getFullYear();
+            if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--;
+            return age;
+        }
 
-            modalName.textContent = name;
-            
-            const phones = parsePhones(phoneStr);
+        downloadPhoto(id, lastname) {
+            if (!id) return;
+            const link = document.createElement('a');
+            link.href = `https://drive.google.com/uc?export=download&id=${id}`;
+            link.download = `${lastname || 'Іменинник'}.jpg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
 
-            if (phones.length === 0) {
-                phoneList.innerHTML = '<div class="no-phones">Телефони не знайдено</div>';
-            } else {
-                phoneList.innerHTML = phones.map(p => {
-                    const formattedNumber = formatPhoneNumber(p.number);
-                    const labelHtml = p.label ? `<div class="phone-label">${p.label}</div>` : '';
-                    
-                    return `
-                        <div class="phone-item" onclick="callPhone('${p.number}')">
-                            <div class="phone-icon">📱</div>
-                            <div>
-                                <div class="phone-number">${formattedNumber}</div>
-                                ${labelHtml}
-                            </div>
-                        </div>
-                    `;
-                }).join('');
+        createCard(p) {
+            const age = this.calcAge(p.birthdate);
+            const [, m, d] = p.birthdate.split('-').map(Number);
+            const today = new Date();
+            const isToday = today.getDate() === d && (today.getMonth() + 1) === m;
+
+            const photo = p.id 
+                ? `<img src="https://drive.google.com/thumbnail?id=${p.id}&sz=w400" alt="photo" onerror="this.outerHTML='<span>👤</span>'">`
+                : `<span>👤</span>`;
+
+            const greetBtn = p.phone 
+                ? `<button class="greet-btn" onclick="showPhoneModal('${p.lastname.replace(/'/g, "\\'")}', '${p.phone.replace(/'/g, "\\'")}')">📞 Привітати</button>`
+                : '';
+
+             const downloadBtn = p.id ? `
+                <button onclick="app.downloadPhoto('${p.id}', '${p.lastname.replace(/'/g, "\\'")}'); event.stopImmediatePropagation();" 
+                        class="download-btn">
+                    ⬇️
+                </button>` : '';
+
+            return `
+                <div class="birthday-card ${isToday ? 'is-today' : ''}">
+                    <div class="photo-wrap" style="position: relative;">
+                        ${photo}
+                        ${downloadBtn}
+                    </div>
+                    <div class="info">
+                        <div class="name">${p.lastname}</div>
+                        <div class="age-info">Вік ${age} р.</div>
+                        ${greetBtn}
+                    </div>
+                </div>
+            `;
+        }
+
+        render(entries) {
+            const ranges = this.getWeekRanges();
+
+            const processList = (list, start, end) => {
+                return list
+                    .filter(p => this.isDateInRage(p.birthdate, start, end))
+                    .sort((a, b) => {
+                        const getCompDate = (dateStr) => {
+                            const [, mm, dd] = dateStr.split('-').map(Number);
+                            let d = new Date(start.getFullYear(), mm - 1, dd);
+                            if (d < start) d.setFullYear(start.getFullYear() + 1);
+                            return d;
+                        };
+                        return getCompDate(a.birthdate) - getCompDate(b.birthdate);
+                    });
+            };
+
+            const groupByDay = (list) => {
+                if (list.length === 0) return '';
+                const groups = {};
+                list.forEach(p => {
+                    const [, m, d] = p.birthdate.split('-').map(Number);
+                    const dateKey = `${d} ${new Date(2000, m - 1, d).toLocaleDateString('uk-UA', { month: 'long' })}`;
+                    if (!groups[dateKey]) groups[dateKey] = [];
+                    groups[dateKey].push(p);
+                });
+
+                let html = '';
+                for (const [date, people] of Object.entries(groups)) {
+                    html += `<div class="day-group-title">${date}</div>`;
+                    html += people.map(p => this.createCard(p)).join('');
+                }
+                return html;
+            };
+
+            const currentData = processList(entries, ranges.startCurrent, ranges.endCurrent);
+            const nextData = processList(entries, ranges.startNext, ranges.endNext);
+
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+
+            document.getElementById('count-current').textContent = currentData.length;
+            document.getElementById('count-next').textContent = nextData.length;
+
+            document.getElementById('list-current').innerHTML = currentData.length 
+                ? groupByDay(currentData)
+                : '<div class="empty-state">На цьому тижні свят немає</div>';
+
+            document.getElementById('list-next').innerHTML = nextData.length 
+                ? groupByDay(nextData)
+                : '<div class="empty-state">На наступному тижні свят немає</div>';
+        }
+    }
+
+    const app = new BirthdayMobileApp();
+
+    // ==================== МОДАЛЬНЕ ВІКНО ====================
+
+    function parsePhones(phoneStr) {
+        if (!phoneStr) return [];
+        const parts = phoneStr.split(',').map(s => s.trim());
+        const phones = [];
+
+        parts.forEach(part => {
+            const digits = part.replace(/\D/g, '');
+            let label = '';
+            let number = '';
+
+            if (digits.length === 10 && digits.startsWith('0')) {
+                number = digits;
+                if (part.toLowerCase().includes('м.т') || part.toLowerCase().includes('моб')) label = 'Мобільний';
+            } else if (digits.length >= 6 && digits.length <= 7) {
+                number = digits;
+                label = 'Міський';
+            } else if (digits.length > 0) {
+                number = digits;
             }
 
-            modal.classList.add('active');
-        }
-
-        function formatPhoneNumber(number) {
-            if (number.length === 10 && number.startsWith('0')) {
-                return `${number.slice(0, 3)} ${number.slice(3, 6)} ${number.slice(6, 8)} ${number.slice(8)}`;
-            } else if (number.length === 6) {
-                return `${number.slice(0, 2)}-${number.slice(2, 4)}-${number.slice(4)}`;
-            } else if (number.length === 7) {
-                return `${number.slice(0, 2)}-${number.slice(2, 4)}-${number.slice(4)}`;
+            if (number && !label) {
+                const before = part.replace(number, '').replace(/[\d\-\s()]/g, '').trim();
+                if (before && !['м.т','моб'].includes(before.toLowerCase())) label = before;
             }
-            return number;
-        }
 
-        function callPhone(number) {
-            window.location.href = `tel:${number}`;
-        }
-
-        function closePhoneModal() {
-            document.getElementById('phoneModal').classList.remove('active');
-        }
-
-        document.getElementById('phoneModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closePhoneModal();
-            }
+            if (number) phones.push({ number, label: label || '' });
         });
-    </script>
+
+        return phones;
+    }
+
+    function showPhoneModal(name, phoneStr) {
+        const modal = document.getElementById('phoneModal');
+        const modalName = document.getElementById('modalName');
+        const phoneList = document.getElementById('phoneList');
+
+        modalName.textContent = name;
+        const phones = parsePhones(phoneStr);
+
+        if (phones.length === 0) {
+            phoneList.innerHTML = '<div class="no-phones">Телефони не знайдено</div>';
+        } else {
+            phoneList.innerHTML = phones.map(p => {
+                const formatted = formatPhoneNumber(p.number);
+                const labelHtml = p.label ? `<div class="phone-label">${p.label}</div>` : '';
+                return `
+                    <div class="phone-item" onclick="callPhone('${p.number}')">
+                        <div class="phone-icon">📱</div>
+                        <div>
+                            <div class="phone-number">${formatted}</div>
+                            ${labelHtml}
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+        modal.classList.add('active');
+    }
+
+    function formatPhoneNumber(number) {
+        if (number.length === 10 && number.startsWith('0')) {
+            return `${number.slice(0,3)} ${number.slice(3,6)} ${number.slice(6,8)} ${number.slice(8)}`;
+        }
+        return number;
+    }
+
+    function callPhone(number) {
+        window.location.href = `tel:${number}`;
+    }
+
+    function closePhoneModal() {
+        document.getElementById('phoneModal').classList.remove('active');
+    }
+
+    document.getElementById('phoneModal').addEventListener('click', function(e) {
+        if (e.target === this) closePhoneModal();
+    });
+</script>
 </body>
 </html>
