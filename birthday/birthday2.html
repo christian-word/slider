@@ -1,0 +1,518 @@
+﻿<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Іменинники тижня</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --gold: #fbbf24;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.4;
+            padding: 12px;
+        }
+
+        .header { text-align: center; padding: 15px 0; }
+
+        .section-title {
+            font-size: 1.2rem;
+            margin: 25px 0 15px;
+            padding: 8px 12px;
+            background: rgba(56, 189, 248, 0.1);
+            border-left: 4px solid var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .count-badge {
+            background: var(--accent);
+            color: var(--bg);
+            font-size: 0.85rem;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .day-group-title {
+            color: var(--accent);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 18px 0 10px 5px;
+            display: flex;
+            align-items: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .day-group-title::after {
+            content: "";
+            flex-grow: 1;
+            height: 1px;
+            background: var(--border);
+            margin-left: 12px;
+        }
+
+        .birthday-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .is-today {
+            border: 2px solid var(--gold) !important;
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
+        }
+
+        .is-today::after {
+            content: "СЬОГОДНІ 🎂";
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: var(--gold);
+            color: #000;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 8px;
+        }
+
+        .photo-wrap {
+            width: 100px;
+            height: 100px;
+            flex-shrink: 0;
+            background: #2d3748;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid var(--border);
+            position: relative;
+        }
+
+        .photo-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-wrap span { font-size: 2.5rem; }
+
+        .info { padding: 12px 15px; flex-grow: 1; }
+        .name { font-weight: 700; font-size: 1.1rem; color: var(--gold); margin-bottom: 2px; }
+        .age-info { color: var(--text-muted); font-size: 0.9rem; }
+
+        .skeleton {
+            background: linear-gradient(90deg, var(--card-bg) 25%, #2d3748 50%, var(--card-bg) 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .skeleton-card {
+            height: 100px;
+            border-radius: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.02);
+            border-radius: 12px;
+            border: 1px dashed var(--border);
+        }
+
+        .greet-btn {
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: all 0.2s;
+        }
+
+        .download-btn, .greeting-btn {
+            position: absolute;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            font-size: 1.1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        }
+
+        .download-btn {
+            bottom: 4px;
+            right: 4px;
+            background: rgba(0, 0, 0, 0.65);
+            color: #e2e8f0;
+        }
+
+        .greeting-btn {
+            top: 4px;
+            right: 4px;
+            background: #22c55e;
+            color: white;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .modal-overlay.active { display: flex; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🎂 Іменинники</h1>
+    </div>
+
+    <div id="loader">
+        <div class="skeleton-card skeleton"></div>
+        <div class="skeleton-card skeleton"></div>
+        <div class="skeleton-card skeleton"></div>
+    </div>
+
+    <div id="content" style="display: none;">
+        <div class="section-title">
+            Цього тижня <span id="count-current" class="count-badge">0</span>
+        </div>
+        <div id="list-current"></div>
+
+        <div class="section-title">
+            Наступного тижня <span id="count-next" class="count-badge">0</span>
+        </div>
+        <div id="list-next"></div>
+    </div>
+
+    <div id="error" style="display: none; color: #f87171; text-align: center; padding: 20px;"></div>
+
+    <!-- Модальне вікно телефонів -->
+    <div id="phoneModal" class="modal-overlay">
+        <div class="modal-content" style="background: var(--card-bg); border-radius: 20px; padding: 24px; max-width: 400px; width: 100%;">
+            <div class="modal-header" id="modalName" style="font-size: 1.3rem; font-weight: 700; margin-bottom: 20px; color: var(--gold);"></div>
+            <div class="phone-list" id="phoneList"></div>
+            <button class="modal-close" onclick="closePhoneModal()" style="margin-top: 16px; width: 100%; padding: 12px; background: #334155; border: none; border-radius: 12px; color: white;">Закрити</button>
+        </div>
+    </div>
+
+    <script>
+        class BirthdayMobileApp {
+            constructor() {
+                this.apiUrl = 'https://www.googleapis.com/drive/v3/files/1BsQR7Q1HfDx1u0QeHnzY8gvlac2iUYFA?alt=media&key=AIzaSyAlxAoAyke0AAkiI3akNyWLNVwtoycjkgA';
+                this.init();
+            }
+
+            async init() {
+                try {
+                    const response = await fetch(this.apiUrl);
+                    if (!response.ok) throw new Error('Помилка завантаження');
+                    const data = await response.json();
+                    this.render(data.entries);
+                } catch (err) {
+                    document.getElementById('loader').style.display = 'none';
+                    const errEl = document.getElementById('error');
+                    errEl.style.display = 'block';
+                    errEl.textContent = "Не вдалося отримати дані. Перевірте підключення.";
+                }
+            }
+
+            getWeekRanges() {
+                const now = new Date();
+                now.setHours(0,0,0,0);
+                const day = now.getDay() || 7;
+                
+                const startCurrent = new Date(now);
+                startCurrent.setDate(now.getDate() - (day - 1));
+                
+                const endCurrent = new Date(startCurrent);
+                endCurrent.setDate(startCurrent.getDate() + 6);
+                endCurrent.setHours(23,59,59,999);
+
+                const startNext = new Date(endCurrent);
+                startNext.setDate(endCurrent.getDate() + 1);
+                startNext.setHours(0,0,0,0);
+
+                const endNext = new Date(startNext);
+                endNext.setDate(startNext.getDate() + 6);
+                endNext.setHours(23,59,59,999);
+
+                return { startCurrent, endCurrent, startNext, endNext };
+            }
+
+            isDateInRage(dateStr, start, end) {
+                const [, m, d] = dateStr.split('-').map(Number);
+                const currentYear = new Date().getFullYear();
+                return [currentYear - 1, currentYear, currentYear + 1].some(y => {
+                    const bday = new Date(y, m - 1, d);
+                    return bday >= start && bday <= end;
+                });
+            }
+
+            calcAge(bd) {
+                const [y, m, d] = bd.split('-').map(Number);
+                const birth = new Date(y, m - 1, d);
+                const today = new Date();
+                let age = today.getFullYear() - birth.getFullYear();
+                if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--;
+                return age;
+            }
+
+            downloadPhoto(id, lastname) {
+                if (!id) return;
+                const link = document.createElement('a');
+                link.href = `https://drive.google.com/uc?export=download&id=${id}`;
+                link.download = `${lastname || 'Іменинник'}.jpg`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
+            createGreetingCard(p) {
+                if (!p || !p.id) {
+                    alert("Фото відсутнє");
+                    return;
+                }
+
+                const cardModal = document.createElement('div');
+                cardModal.id = "greetingModal";
+                cardModal.style.cssText = `
+                    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                    background: rgba(0,0,0,0.92); z-index: 2000;
+                    display: flex; align-items: center; justify-content: center; padding: 15px;
+                `;
+
+                cardModal.innerHTML = `
+                    <div style="background:#1e293b; border-radius:20px; padding:20px; max-width:420px; width:100%; text-align:center;">
+                        <h3 style="color:#fbbf24; margin-bottom:15px;">🎂 Святкова листівка</h3>
+                        <div id="cardPreview" style="margin:15px auto; max-width:380px; border-radius:16px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.6);"></div>
+                        <button id="downloadCardBtn" style="background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#000; font-weight:700; padding:14px; border:none; border-radius:12px; font-size:1.1rem; width:100%; margin:10px 0;">⬇️ Скачати листівку</button>
+                        <button onclick="document.getElementById('greetingModal').remove()" style="background:#334155; color:white; border:none; padding:12px; width:100%; border-radius:12px;">Закрити</button>
+                    </div>
+                `;
+
+                document.body.appendChild(cardModal);
+
+                const canvas = document.createElement('canvas');
+                canvas.width = 800;
+                canvas.height = 1100;
+                const ctx = canvas.getContext('2d');
+
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                img.src = `https://drive.google.com/thumbnail?id=${p.id}&sz=w1200`;
+
+                img.onload = () => {
+                    ctx.fillStyle = '#1e293b';
+                    ctx.fillRect(0, 0, 800, 1100);
+
+                    ctx.save();
+                    ctx.roundRect(60, 170, 680, 680, 30);
+                    ctx.clip();
+                    ctx.drawImage(img, 60, 170, 680, 680);
+                    ctx.restore();
+
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.font = 'bold 58px system-ui';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('З Днем Народження!', 400, 120);
+
+                    ctx.font = 'bold 46px system-ui';
+                    ctx.fillText(p.lastname, 400, 890);
+
+                    ctx.fillStyle = '#e2e8f0';
+                    ctx.font = '30px system-ui';
+                    ctx.fillText(`Вік ${this.calcAge(p.birthdate)} років`, 400, 950);
+
+                    ctx.font = 'italic 27px system-ui';
+                    ctx.fillText('Нехай збуваються всі мрії!', 400, 1020);
+
+                    const preview = document.getElementById('cardPreview');
+                    const previewImg = document.createElement('img');
+                    previewImg.src = canvas.toDataURL('image/png');
+                    previewImg.style.width = '100%';
+                    preview.appendChild(previewImg);
+
+                    // Скачування
+                    document.getElementById('downloadCardBtn').onclick = () => {
+                        const link = document.createElement('a');
+                        link.download = `${p.lastname} - Листівка.png`;
+                        link.href = canvas.toDataURL('image/png');
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    };
+                };
+
+                img.onerror = () => alert("Не вдалося завантажити фото для листівки");
+            }
+
+            createCard(p) {
+                const age = this.calcAge(p.birthdate);
+                const [, m, d] = p.birthdate.split('-').map(Number);
+                const today = new Date();
+                const isToday = today.getDate() === d && (today.getMonth() + 1) === m;
+
+                const photo = p.id 
+                    ? `<img src="https://drive.google.com/thumbnail?id=${p.id}&sz=w400" alt="photo" onerror="this.outerHTML='<span>👤</span>'">`
+                    : `<span>👤</span>`;
+
+                const greetBtn = p.phone 
+                    ? `<button class="greet-btn" onclick="showPhoneModal('${p.lastname.replace(/'/g, "\\'")}', '${p.phone.replace(/'/g, "\\'")}')">📞 Привітати</button>`
+                    : '';
+
+                const buttons = p.id ? `
+                    <button onclick="app.downloadPhoto('${p.id}', '${p.lastname.replace(/'/g, "\\'")}'); event.stopImmediatePropagation();" class="download-btn">⬇️</button>
+                    <button onclick="app.createGreetingCard.call(app, ${JSON.stringify({id: p.id, lastname: p.lastname, birthdate: p.birthdate})}); event.stopImmediatePropagation();" class="greeting-btn">🎁</button>
+                ` : '';
+
+                return `
+                    <div class="birthday-card ${isToday ? 'is-today' : ''}">
+                        <div class="photo-wrap">
+                            ${photo}
+                            ${buttons}
+                        </div>
+                        <div class="info">
+                            <div class="name">${p.lastname}</div>
+                            <div class="age-info">Вік ${age} р.</div>
+                            ${greetBtn}
+                        </div>
+                    </div>
+                `;
+            }
+
+            render(entries) {
+                const ranges = this.getWeekRanges();
+
+                const processList = (list, start, end) => {
+                    return list.filter(p => this.isDateInRage(p.birthdate, start, end))
+                        .sort((a, b) => {
+                            const getCompDate = (dateStr) => {
+                                const [, mm, dd] = dateStr.split('-').map(Number);
+                                let d = new Date(start.getFullYear(), mm - 1, dd);
+                                if (d < start) d.setFullYear(start.getFullYear() + 1);
+                                return d;
+                            };
+                            return getCompDate(a.birthdate) - getCompDate(b.birthdate);
+                        });
+                };
+
+                const groupByDay = (list) => {
+                    if (!list.length) return '';
+                    const groups = {};
+                    list.forEach(p => {
+                        const [, m, d] = p.birthdate.split('-').map(Number);
+                        const dateKey = `${d} ${new Date(2000, m-1, d).toLocaleDateString('uk-UA', {month:'long'})}`;
+                        if (!groups[dateKey]) groups[dateKey] = [];
+                        groups[dateKey].push(p);
+                    });
+
+                    let html = '';
+                    for (const [date, people] of Object.entries(groups)) {
+                        html += `<div class="day-group-title">${date}</div>`;
+                        html += people.map(p => this.createCard(p)).join('');
+                    }
+                    return html;
+                };
+
+                const currentData = processList(entries, ranges.startCurrent, ranges.endCurrent);
+                const nextData = processList(entries, ranges.startNext, ranges.endNext);
+
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+
+                document.getElementById('count-current').textContent = currentData.length;
+                document.getElementById('count-next').textContent = nextData.length;
+
+                document.getElementById('list-current').innerHTML = currentData.length 
+                    ? groupByDay(currentData) 
+                    : '<div class="empty-state">На цьому тижні свят немає</div>';
+
+                document.getElementById('list-next').innerHTML = nextData.length 
+                    ? groupByDay(nextData) 
+                    : '<div class="empty-state">На наступному тижні свят немає</div>';
+            }
+        }
+
+        const app = new BirthdayMobileApp();
+
+        // Телефони
+        function parsePhones(phoneStr) {
+            if (!phoneStr) return [];
+            return phoneStr.split(',').map(s => s.trim()).filter(Boolean);
+        }
+
+        function showPhoneModal(name, phoneStr) {
+            const modal = document.getElementById('phoneModal');
+            document.getElementById('modalName').textContent = name;
+            const phones = parsePhones(phoneStr);
+            
+            let html = '';
+            if (phones.length === 0) {
+                html = '<div style="text-align:center; padding:20px; color:#94a3b8;">Телефони не знайдено</div>';
+            } else {
+                html = phones.map(phone => `
+                    <div class="phone-item" onclick="callPhone('${phone}')" style="background:#0f172a; padding:14px; border-radius:12px; margin-bottom:8px; cursor:pointer;">
+                        <div style="font-size:1.4rem; margin-right:12px;">📱</div>
+                        <div>
+                            <div style="font-size:1.1rem; font-weight:600;">${phone}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('phoneList').innerHTML = html;
+            modal.classList.add('active');
+        }
+
+        function callPhone(number) {
+            window.location.href = `tel:${number}`;
+        }
+
+        function closePhoneModal() {
+            document.getElementById('phoneModal').classList.remove('active');
+        }
+
+        document.getElementById('phoneModal').addEventListener('click', function(e) {
+            if (e.target === this) closePhoneModal();
+        });
+    </script>
+</body>
+</html>
