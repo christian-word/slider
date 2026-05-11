@@ -423,7 +423,7 @@
             const isToday = today.getDate() === d && (today.getMonth() + 1) === m;
 
             const photo = p.id 
-                ? `<img src="https://drive.google.com/thumbnail?id=${p.id}&sz=w400" alt="photo" onerror="this.outerHTML='<span>👤</span>'">`
+                ? `<img src="https://drive.google.com/thumbnail?id=${p.id}&sz=w400" alt="photo" data-photoid="${p.id}" onerror="this.outerHTML='<span>👤</span>'">`
                 : `<span>👤</span>`;
 
             const greetBtn = p.phone 
@@ -786,23 +786,48 @@
         }
 
         if (photoId) {
-            const directUrl = `https://drive.google.com/thumbnail?id=${photoId}&sz=w800`;
-            const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(directUrl)}`;
+            // Шукаємо вже завантажений <img> на сторінці — він там вже є!
+            const existingImg = document.querySelector(`img[data-photoid="${photoId}"]`);
 
-            const tryLoad = (url) => fetch(url, { mode: 'cors' })
-                .then(r => { if (!r.ok) throw new Error(); return r.blob(); })
-                .then(blob => {
-                    const objUrl = URL.createObjectURL(blob);
-                    const img = new Image();
-                    img.onload = () => { drawCard(img); URL.revokeObjectURL(objUrl); };
-                    img.onerror = () => { URL.revokeObjectURL(objUrl); drawCard(null); };
-                    img.src = objUrl;
-                });
-
-            // Спочатку пробуємо напряму, якщо не вийшло — через проксі
-            tryLoad(directUrl).catch(() => tryLoad(proxyUrl).catch(() => drawCard(null)));
+            if (existingImg && existingImg.complete && existingImg.naturalWidth > 0) {
+                // Малюємо через createImageBitmap щоб уникнути tainted canvas
+                createImageBitmap(existingImg)
+                    .then(bitmap => drawCard(bitmap))
+                    .catch(() => {
+                        // Якщо і це не вийшло — малюємо через offscreen canvas trick
+                        drawCardFromImgElement(existingImg);
+                    });
+            } else {
+                // Фото ще не завантажилось — чекаємо
+                if (existingImg) {
+                    existingImg.onload = () => {
+                        createImageBitmap(existingImg)
+                            .then(bitmap => drawCard(bitmap))
+                            .catch(() => drawCardFromImgElement(existingImg));
+                    };
+                    existingImg.onerror = () => drawCard(null);
+                } else {
+                    drawCard(null);
+                }
+            }
         } else {
             drawCard(null);
+        }
+
+        function drawCardFromImgElement(imgEl) {
+            // Останній варіант: малюємо img в окремий canvas і беремо пікселі
+            try {
+                const tmpCanvas = document.createElement('canvas');
+                tmpCanvas.width = imgEl.naturalWidth;
+                tmpCanvas.height = imgEl.naturalHeight;
+                tmpCanvas.getContext('2d').drawImage(imgEl, 0, 0);
+                const tmpImg = new Image();
+                tmpImg.onload = () => drawCard(tmpImg);
+                tmpImg.onerror = () => drawCard(null);
+                tmpImg.src = tmpCanvas.toDataURL();
+            } catch(e) {
+                drawCard(null);
+            }
         }
     }
 </script>
