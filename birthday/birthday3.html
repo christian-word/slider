@@ -786,11 +786,21 @@
         }
 
         if (photoId) {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => drawCard(img);
-            img.onerror = () => drawCard(null);
-            img.src = `https://drive.google.com/thumbnail?id=${photoId}&sz=w800`;
+            const directUrl = `https://drive.google.com/thumbnail?id=${photoId}&sz=w800`;
+            const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(directUrl)}`;
+
+            const tryLoad = (url) => fetch(url, { mode: 'cors' })
+                .then(r => { if (!r.ok) throw new Error(); return r.blob(); })
+                .then(blob => {
+                    const objUrl = URL.createObjectURL(blob);
+                    const img = new Image();
+                    img.onload = () => { drawCard(img); URL.revokeObjectURL(objUrl); };
+                    img.onerror = () => { URL.revokeObjectURL(objUrl); drawCard(null); };
+                    img.src = objUrl;
+                });
+
+            // Спочатку пробуємо напряму, якщо не вийшло — через проксі
+            tryLoad(directUrl).catch(() => tryLoad(proxyUrl).catch(() => drawCard(null)));
         } else {
             drawCard(null);
         }
