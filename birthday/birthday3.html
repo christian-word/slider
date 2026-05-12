@@ -308,6 +308,74 @@
     margin-top: 8px;
 }
 
+.editor-label {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.editor-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.editor-input {
+    background: var(--bg);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: vertical;
+    width: 100%;
+}
+
+.editor-input:focus {
+    border-color: var(--accent);
+}
+
+.editor-input option {
+    background: #1e293b;
+}
+
+.font-btn, .decor-btn {
+    background: #1e293b;
+    color: #94a3b8;
+    border: 1px solid #334155;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.font-btn.active, .decor-btn.active {
+    background: #0ea5e9;
+    color: #fff;
+    border-color: #0ea5e9;
+}
+
+.scheme-btn {
+    color: #fff;
+    border: 2px solid transparent;
+    padding: 7px 12px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-weight: 600;
+}
+.scheme-btn.active {
+    border-color: #fbbf24;
+    box-shadow: 0 0 8px rgba(251,191,36,0.4);
+}
+
     </style>
 </head>
 <body>
@@ -341,6 +409,99 @@
             <div class="modal-header" id="modalName"></div>
             <div class="phone-list" id="phoneList"></div>
             <button class="modal-close" onclick="closePhoneModal()">Закрити</button>
+        </div>
+    </div>
+
+    <!-- РЕДАКТОР ВІТАЛЬНОЇ ЛИСТІВКИ -->
+    <div id="cardEditorModal" class="modal-overlay" style="z-index:1100; padding:10px;">
+        <div class="modal-content" style="max-width:720px; width:100%; max-height:95vh; overflow-y:auto; padding:20px;">
+
+            <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <span>🎨 Редактор листівки</span>
+                <button onclick="closeCardEditor()" style="background:none;border:none;color:#94a3b8;font-size:1.6rem;cursor:pointer;line-height:1;">×</button>
+            </div>
+
+            <div style="display:flex; gap:16px; flex-wrap:wrap;">
+
+                <!-- Ліва колонка — форма -->
+                <div style="flex:1; min-width:230px; display:flex; flex-direction:column; gap:11px;">
+
+                    <div class="editor-group">
+                        <label class="editor-label">👤 Ім'я / заголовок</label>
+                        <input id="ed-name" class="editor-input" type="text" oninput="updatePreview()">
+                    </div>
+
+                    <div class="editor-group">
+                        <label class="editor-label">✍️ Стиль заголовку</label>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <button class="font-btn active" data-font="italic bold 54px Georgia, serif" onclick="selectFont(this)">Класичний</button>
+                            <button class="font-btn" data-font="bold 52px Arial, sans-serif" onclick="selectFont(this)">Сучасний</button>
+                            <button class="font-btn" data-font="italic 56px 'Times New Roman', serif" onclick="selectFont(this)">Елегантний</button>
+                        </div>
+                    </div>
+
+                    <div class="editor-group">
+                        <label class="editor-label">🎨 Кольорова схема</label>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button class="scheme-btn active" data-scheme="purple" onclick="selectScheme(this)" style="background:linear-gradient(135deg,#1a0a2e,#2d1a4a);">💜 Фіолетова</button>
+                            <button class="scheme-btn" data-scheme="navy" onclick="selectScheme(this)" style="background:linear-gradient(135deg,#0a1628,#0d2b4a);">💙 Нічна</button>
+                            <button class="scheme-btn" data-scheme="emerald" onclick="selectScheme(this)" style="background:linear-gradient(135deg,#0a2818,#0d4a2b);">💚 Смарагд</button>
+                            <button class="scheme-btn" data-scheme="rose" onclick="selectScheme(this)" style="background:linear-gradient(135deg,#2a0a18,#4a0d28);">❤️ Рожева</button>
+                        </div>
+                    </div>
+
+                    <div class="editor-group">
+                        <label class="editor-label">🌸 Декор</label>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <button class="decor-btn active" data-decor="flowers" onclick="selectDecor(this)">🌸 Квіти</button>
+                            <button class="decor-btn" data-decor="hearts" onclick="selectDecor(this)">💕 Серця</button>
+                            <button class="decor-btn" data-decor="stars" onclick="selectDecor(this)">✨ Зірки</button>
+                            <button class="decor-btn" data-decor="mix" onclick="selectDecor(this)">🎊 Мікс</button>
+                        </div>
+                    </div>
+
+                    <div class="editor-group">
+                        <label class="editor-label">💌 Привітання</label>
+                        <textarea id="ed-wish" class="editor-input" rows="3" oninput="updatePreview()"></textarea>
+                    </div>
+
+                    <div class="editor-group">
+                        <label class="editor-label">📖 Вірш із Псалмів</label>
+                        <select id="ed-psalm-select" class="editor-input" onchange="onPsalmSelect()">
+                            <option value="0">Пс. 27:1 — «ГОСПОДЬ — моє світло і моє спасіння»</option>
+                            <option value="1">Пс. 23:1 — «ГОСПОДЬ — Пастир мій, мені нічого не бракуватиме»</option>
+                            <option value="2">Пс. 91:1 — «Хто під захистом Всевишнього живе...»</option>
+                            <option value="3">Пс. 34:8 — «Смакуйте і бачте, який добрий ГОСПОДЬ!»</option>
+                            <option value="4">Пс. 121:2 — «Поміч моя — від ГОСПОДА, що сотворив небо й землю»</option>
+                            <option value="5">Пс. 46:1 — «Бог нам — прихисток і сила»</option>
+                            <option value="6">Пс. 37:4 — «Знайди свою радість у Господі...»</option>
+                            <option value="custom">✏️ Свій варіант...</option>
+                        </select>
+                        <textarea id="ed-psalm-custom" class="editor-input" rows="2" style="margin-top:6px; display:none;" placeholder="Введіть свій вірш..." oninput="updatePreview()"></textarea>
+                    </div>
+
+                    <!-- Кнопки дій -->
+                    <button onclick="downloadFromEditor()" style="background:linear-gradient(135deg,#f472b6,#ec4899);color:#fff;border:none;padding:13px;border-radius:14px;font-size:1rem;font-weight:700;cursor:pointer;width:100%;">
+                        ⬇️ Завантажити листівку
+                    </button>
+                    <div style="display:flex; gap:8px;">
+                        <button onclick="copyCardToClipboard()" style="flex:1;background:#334155;color:#f8fafc;border:none;padding:11px;border-radius:12px;font-size:0.9rem;font-weight:600;cursor:pointer;">
+                            📋 Копіювати
+                        </button>
+                        <button onclick="shareToTelegram()" style="flex:1;background:#0088cc;color:#fff;border:none;padding:11px;border-radius:12px;font-size:0.9rem;font-weight:600;cursor:pointer;">
+                            ✈️ Telegram
+                        </button>
+                    </div>
+                    <div id="ed-share-msg" style="text-align:center;font-size:0.82rem;color:#38bdf8;min-height:18px;"></div>
+                </div>
+
+                <!-- Права колонка — preview -->
+                <div style="flex:1; min-width:200px; display:flex; flex-direction:column; align-items:center;">
+                    <div class="editor-label" style="align-self:flex-start; margin-bottom:6px;">👁 Попередній перегляд</div>
+                    <canvas id="previewCanvas" style="width:100%; border-radius:12px; border:1px solid #334155; box-shadow:0 4px 20px rgba(0,0,0,0.4);"></canvas>
+                </div>
+
+            </div>
         </div>
     </div>
 
@@ -430,7 +591,7 @@
                 ? `<button class="greet-btn" onclick="showPhoneModal('${p.lastname.replace(/'/g, "\\'")}', '${p.phone.replace(/'/g, "\\'")}')">📞 Привітати</button>`
                 : '';
 
-            const cardBtn = `<button class="card-btn" onclick="generateGreetingCard('${p.lastname.replace(/'/g, "\\'")}', '${p.id || ''}'); event.stopPropagation();">🎁 Вітальна</button>`;
+            const cardBtn = `<button class="card-btn" onclick="openCardEditor('${p.lastname.replace(/'/g, "\\'")}', '${p.id || ''}'); event.stopPropagation();">🎁 Вітальна</button>`;
 
              const downloadBtn = p.id ? `
                 <button onclick="app.downloadPhoto('${p.id}', '${p.lastname.replace(/'/g, "\\'")}'); event.stopImmediatePropagation();" 
@@ -591,243 +752,276 @@
         if (e.target === this) closePhoneModal();
     });
 
-    // ==================== ГЕНЕРАЦІЯ ВІТАЛЬНОЇ ЛИСТІВКИ ====================
+    // ==================== РЕДАКТОР ЛИСТІВКИ ====================
 
-    const PSALMS = [
-        "Пс. 27:1 — «ГОСПОДЬ — моє світло і моє спасіння»",
-        "Пс. 23:1 — «ГОСПОДЬ — Пастир мій, мені нічого не бракуватиме»",
-        "Пс. 91:1 — «Хто під захистом Всевишнього живе, у тіні Всемогутнього перебуває»",
-        "Пс. 34:8 — «Смакуйте і бачте, який добрий ГОСПОДЬ!»",
-        "Пс. 121:2 — «Поміч моя — від ГОСПОДА, що сотворив небо й землю»",
-        "Пс. 46:1 — «Бог нам — прихисток і сила, поміч у скорботах, завжди доступна»",
-        "Пс. 37:4 — «Знайди свою радість у Господі, і Він виконає бажання серця твого»",
-    ];
+    let _editorPhotoId = '';
+    let _previewDebounce = null;
+    let _edFont   = 'italic bold 54px Georgia, serif';
+    let _edScheme = 'purple';
+    let _edDecor  = 'flowers';
+
+    const SCHEMES = {
+        purple:  { bg1:'#1a0a2e', bg2:'#2d1a4a', bg3:'#1a0a2e' },
+        navy:    { bg1:'#0a1628', bg2:'#0d2b4a', bg3:'#0a1628' },
+        emerald: { bg1:'#0a2818', bg2:'#0d4a2b', bg3:'#0a2818' },
+        rose:    { bg1:'#2a0a18', bg2:'#4a0d28', bg3:'#2a0a18' },
+    };
+    const DECORS = {
+        flowers: { top:'🌸🌺🌸🌺🌸🌺🌸🌺🌸', mid:'🌸🌸🌸🌸🌸🌸🌸🌸🌸', bot:'💜💜💜💜💜💜💜💜💜💜' },
+        hearts:  { top:'💕💗💕💗💕💗💕💗💕', mid:'💗💕💗💕💗💕💗💕💗', bot:'❤️🧡💛💚💙💜🤍💙💜' },
+        stars:   { top:'✨⭐✨⭐✨⭐✨⭐✨', mid:'⭐✨⭐✨⭐✨⭐✨⭐', bot:'✨🌟✨🌟✨🌟✨🌟✨' },
+        mix:     { top:'🎊🎉🎈🎁🎊🎉🎈🎁🎊', mid:'🌸💕✨🌟🌸💕✨🌟🌸', bot:'🎂🕯️🎂🕯️🎂🕯️🎂🕯️🎂' },
+    };
+
+    function selectFont(btn) {
+        document.querySelectorAll('.font-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        _edFont = btn.dataset.font;
+        updatePreview();
+    }
+    function selectScheme(btn) {
+        document.querySelectorAll('.scheme-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        _edScheme = btn.dataset.scheme;
+        updatePreview();
+    }
+    function selectDecor(btn) {
+        document.querySelectorAll('.decor-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        _edDecor = btn.dataset.decor;
+        updatePreview();
+    }
+
+    function openCardEditor(name, photoId) {
+        _editorPhotoId = photoId;
+        _edFont = 'italic bold 54px Georgia, serif';
+        _edScheme = 'purple'; _edDecor = 'flowers';
+        document.querySelectorAll('.font-btn')[0].click();
+        document.querySelectorAll('.scheme-btn')[0].click();
+        document.querySelectorAll('.decor-btn')[0].click();
+
+        document.getElementById('ed-name').value = name;
+        document.getElementById('ed-wish').value = 'Рясних Божих благословінь\nу новому році життя!';
+        document.getElementById('ed-psalm-select').value = '0';
+        document.getElementById('ed-psalm-custom').style.display = 'none';
+        document.getElementById('ed-share-msg').textContent = '';
+
+        document.getElementById('cardEditorModal').classList.add('active');
+        setTimeout(updatePreview, 80);
+    }
+
+    function closeCardEditor() {
+        document.getElementById('cardEditorModal').classList.remove('active');
+    }
+
+    document.getElementById('cardEditorModal').addEventListener('click', function(e) {
+        if (e.target === this) closeCardEditor();
+    });
+
+    function onPsalmSelect() {
+        const sel = document.getElementById('ed-psalm-select');
+        document.getElementById('ed-psalm-custom').style.display = sel.value === 'custom' ? 'block' : 'none';
+        updatePreview();
+    }
+
+    function getEditorValues() {
+        const name   = document.getElementById('ed-name').value.trim() || 'Іменинник';
+        const wish   = document.getElementById('ed-wish').value.trim();
+        const selVal = document.getElementById('ed-psalm-select').value;
+        const psalm  = selVal === 'custom'
+            ? document.getElementById('ed-psalm-custom').value.trim()
+            : document.getElementById('ed-psalm-select').options[document.getElementById('ed-psalm-select').selectedIndex].text;
+        return { name, wish, psalm };
+    }
+
+    function updatePreview() {
+        clearTimeout(_previewDebounce);
+        _previewDebounce = setTimeout(() => {
+            const { name, wish, psalm } = getEditorValues();
+            const canvas = document.getElementById('previewCanvas');
+            renderCardToCanvas(canvas, name, wish, psalm, _editorPhotoId, false, _edScheme, _edDecor, _edFont);
+        }, 120);
+    }
+
+    function downloadFromEditor() {
+        const { name, wish, psalm } = getEditorValues();
+        const canvas = document.createElement('canvas');
+        renderCardToCanvas(canvas, name, wish, psalm, _editorPhotoId, true, _edScheme, _edDecor, _edFont);
+    }
+
+    function copyCardToClipboard() {
+        const { name, wish, psalm } = getEditorValues();
+        const canvas = document.createElement('canvas');
+        const msg = document.getElementById('ed-share-msg');
+        renderCardToCanvas(canvas, name, wish, psalm, _editorPhotoId, false, _edScheme, _edDecor, _edFont, () => {
+            canvas.toBlob(blob => {
+                if (!blob) { msg.textContent = '❌ Не вдалося'; return; }
+                try {
+                    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+                        .then(() => { msg.textContent = '✅ Скопійовано в буфер!'; setTimeout(()=>msg.textContent='',3000); })
+                        .catch(() => { msg.textContent = '⚠️ Браузер не дозволяє. Завантажте файл.'; });
+                } catch(e) { msg.textContent = '⚠️ Скопіюйте вручну після завантаження.'; }
+            });
+        });
+    }
+
+    function shareToTelegram() {
+        const { name } = getEditorValues();
+        const msg = document.getElementById('ed-share-msg');
+        // Telegram Bot API не підтримує прямий upload з браузера —
+        // скачуємо файл і відкриваємо Telegram Web
+        downloadFromEditor();
+        setTimeout(() => {
+            window.open(`https://web.telegram.org/`, '_blank');
+            msg.textContent = '✅ Файл скачано — відправте його в Telegram!';
+            setTimeout(()=>msg.textContent='',5000);
+        }, 800);
+    }
+
+
 
     function generateGreetingCard(name, photoId) {
-        const canvas = document.createElement('canvas');
-        const W = 900, H = 1200;
-        canvas.width = W;
-        canvas.height = H;
-        const ctx = canvas.getContext('2d');
+        openCardEditor(name, photoId);
+    }
 
-        const psalm = PSALMS[Math.floor(Math.random() * PSALMS.length)];
+    function renderCardToCanvas(canvas, name, wish, psalm, photoId, doDownload, scheme, decor, titleFont, onDone) {
+        scheme = scheme || 'purple';
+        decor  = decor  || 'flowers';
+        titleFont = titleFont || 'italic bold 54px Georgia, serif';
+
+        const W = 900, H = 1200;
+        canvas.width = W; canvas.height = H;
+        const ctx = canvas.getContext('2d');
+        const sc = SCHEMES[scheme] || SCHEMES.purple;
+        const dc = DECORS[decor]   || DECORS.flowers;
+
+        function roundRect(c, x, y, w, h, r) {
+            c.beginPath(); c.moveTo(x+r,y); c.lineTo(x+w-r,y);
+            c.quadraticCurveTo(x+w,y,x+w,y+r); c.lineTo(x+w,y+h-r);
+            c.quadraticCurveTo(x+w,y+h,x+w-r,y+h); c.lineTo(x+r,y+h);
+            c.quadraticCurveTo(x,y+h,x,y+h-r); c.lineTo(x,y+r);
+            c.quadraticCurveTo(x,y,x+r,y); c.closePath();
+        }
+
+        function wrapText(c, text, x, y, maxW, lh, maxY) {
+            const words = text.split(' '); let line = '';
+            for (let n = 0; n < words.length; n++) {
+                const test = line + words[n] + ' ';
+                if (c.measureText(test).width > maxW && n > 0) {
+                    if (y < maxY) c.fillText(line.trim(), x, y);
+                    line = words[n] + ' '; y += lh;
+                } else line = test;
+            }
+            if (y < maxY) c.fillText(line.trim(), x, y);
+        }
 
         function drawCard(photoImg) {
-            // Background gradient
-            const bg = ctx.createLinearGradient(0, 0, W, H);
-            bg.addColorStop(0, '#1a0a2e');
-            bg.addColorStop(0.5, '#2d1a4a');
-            bg.addColorStop(1, '#1a0a2e');
-            ctx.fillStyle = bg;
-            ctx.fillRect(0, 0, W, H);
+            // Фон
+            const bg = ctx.createLinearGradient(0,0,W,H);
+            bg.addColorStop(0, sc.bg1); bg.addColorStop(0.5, sc.bg2); bg.addColorStop(1, sc.bg3);
+            ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
 
-            // Decorative circles
-            const drawCircle = (x, y, r, color) => {
-                ctx.beginPath();
-                ctx.arc(x, y, r, 0, Math.PI * 2);
-                ctx.fillStyle = color;
-                ctx.fill();
-            };
-            drawCircle(80, 80, 120, 'rgba(255,182,193,0.08)');
-            drawCircle(W - 80, H - 80, 150, 'rgba(255,182,193,0.08)');
-            drawCircle(W / 2, H / 2, 350, 'rgba(255,255,255,0.02)');
+            [[80,80,120],[W-80,H-80,150],[W/2,H/2,350]].forEach(([x,y,r],i) => {
+                ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+                ctx.fillStyle = i<2 ? 'rgba(255,182,193,0.08)' : 'rgba(255,255,255,0.02)'; ctx.fill();
+            });
 
-            // Top title "Дорогій..."
-            ctx.textAlign = 'center';
-            ctx.fillStyle = '#ffd700';
+            const lineGrad = ctx.createLinearGradient(100,0,W-100,0);
+            lineGrad.addColorStop(0,'transparent'); lineGrad.addColorStop(0.5,'#ffd700'); lineGrad.addColorStop(1,'transparent');
+
+            // Заголовок
+            ctx.textAlign = 'center'; ctx.fillStyle = '#ffd700';
             ctx.font = 'italic bold 46px Georgia, serif';
-            ctx.shadowColor = 'rgba(255,215,0,0.5)';
-            ctx.shadowBlur = 15;
-            ctx.fillText('Дорогому(-ій)', W / 2, 80);
-            ctx.font = 'italic bold 54px Georgia, serif';
-            ctx.fillText(name + '!', W / 2, 145);
+            ctx.shadowColor = 'rgba(255,215,0,0.5)'; ctx.shadowBlur = 15;
+            ctx.fillText('Дорогому(-ій)', W/2, 80);
+            ctx.font = titleFont;
+            ctx.fillText(name + '!', W/2, 148);
             ctx.shadowBlur = 0;
 
-            // Decorative line
-            const lineGrad = ctx.createLinearGradient(100, 0, W - 100, 0);
-            lineGrad.addColorStop(0, 'transparent');
-            lineGrad.addColorStop(0.5, '#ffd700');
-            lineGrad.addColorStop(1, 'transparent');
-            ctx.strokeStyle = lineGrad;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(100, 165);
-            ctx.lineTo(W - 100, 165);
-            ctx.stroke();
+            ctx.strokeStyle = lineGrad; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(100,168); ctx.lineTo(W-100,168); ctx.stroke();
 
-            // Flowers decoration above photo
-            const flowers = '🌸🌺🌸🌺🌸🌺🌸🌺🌸';
-            ctx.font = '36px serif';
-            ctx.fillStyle = '#fff';
-            ctx.fillText(flowers, W / 2, 215);
+            ctx.font = '36px serif'; ctx.fillStyle = '#fff';
+            ctx.fillText(dc.top, W/2, 215);
 
-            // Photo area
-            const photoX = W / 2 - 200, photoY = 235, photoW = 400, photoH = 460;
+            // Фото
+            const px=W/2-200, py=235, pw=400, ph=460;
+            ctx.shadowColor='rgba(255,215,0,0.6)'; ctx.shadowBlur=30;
+            ctx.strokeStyle='#ffd700'; ctx.lineWidth=4;
+            roundRect(ctx,px-4,py-4,pw+8,ph+8,20); ctx.stroke(); ctx.shadowBlur=0;
 
-            // Photo frame glow
-            ctx.shadowColor = 'rgba(255,215,0,0.6)';
-            ctx.shadowBlur = 30;
-            ctx.strokeStyle = '#ffd700';
-            ctx.lineWidth = 4;
-            roundRect(ctx, photoX - 4, photoY - 4, photoW + 8, photoH + 8, 20);
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-
-            // Photo
             if (photoImg) {
-                ctx.save();
-                roundRect(ctx, photoX, photoY, photoW, photoH, 16);
-                ctx.clip();
-                ctx.drawImage(photoImg, photoX, photoY, photoW, photoH);
-                ctx.restore();
+                ctx.save(); roundRect(ctx,px,py,pw,ph,16); ctx.clip();
+                ctx.drawImage(photoImg,px,py,pw,ph); ctx.restore();
             } else {
-                ctx.fillStyle = '#2d1a4a';
-                roundRect(ctx, photoX, photoY, photoW, photoH, 16);
-                ctx.fill();
-                ctx.font = '120px serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('👤', W / 2, photoY + photoH / 2 + 40);
+                ctx.fillStyle='#2d1a4a'; roundRect(ctx,px,py,pw,ph,16); ctx.fill();
+                ctx.font='120px serif'; ctx.fillText('👤',W/2,py+ph/2+40);
             }
 
-            // Flowers below photo
-            ctx.font = '36px serif';
-            ctx.fillStyle = '#fff';
-            ctx.fillText(flowers, W / 2, photoY + photoH + 55);
+            ctx.font='36px serif'; ctx.fillStyle='#fff';
+            ctx.fillText(dc.top, W/2, py+ph+55);
 
-            // "З Днем народження!" script
-            ctx.textAlign = 'center';
-            ctx.fillStyle = '#ffd700';
-            ctx.font = 'italic bold 62px Georgia, serif';
-            ctx.shadowColor = 'rgba(255,215,0,0.7)';
-            ctx.shadowBlur = 20;
-            ctx.fillText('З Днем народження!', W / 2, photoY + photoH + 120);
-            ctx.shadowBlur = 0;
+            // З Днем народження
+            ctx.fillStyle='#ffd700'; ctx.font='italic bold 62px Georgia, serif';
+            ctx.shadowColor='rgba(255,215,0,0.7)'; ctx.shadowBlur=20;
+            ctx.fillText('З Днем народження!', W/2, py+ph+120); ctx.shadowBlur=0;
 
-            // Divider
-            ctx.strokeStyle = lineGrad;
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.moveTo(80, photoY + photoH + 140);
-            ctx.lineTo(W - 80, photoY + photoH + 140);
-            ctx.stroke();
+            ctx.strokeStyle=lineGrad; ctx.lineWidth=1.5;
+            ctx.beginPath(); ctx.moveTo(80,py+ph+140); ctx.lineTo(W-80,py+ph+140); ctx.stroke();
 
-            // Blessing text
-            ctx.fillStyle = '#f0e6ff';
-            ctx.font = '30px Georgia, serif';
-            ctx.fillText('Рясних Божих благословінь', W / 2, photoY + photoH + 185);
-            ctx.fillText('у новому році життя!', W / 2, photoY + photoH + 225);
+            // Побажання
+            ctx.fillStyle='#f0e6ff'; ctx.font='30px Georgia, serif';
+            const wishLines = wish ? wish.split('\n').filter(l=>l.trim()) : ['Рясних Божих благословінь','у новому році життя!'];
+            let wishY = py+ph+185;
+            wishLines.forEach(l => { ctx.fillText(l, W/2, wishY); wishY += 42; });
 
-            // Hearts row
-            ctx.font = '30px serif';
-            ctx.fillText('🌸🌸🌸🌸🌸🌸🌸🌸🌸', W / 2, photoY + photoH + 270);
+            ctx.font='30px serif';
+            ctx.fillText(dc.mid, W/2, wishY+15);
 
-            // Psalm text box
-            const bibleY = photoY + photoH + 300;
-            ctx.fillStyle = 'rgba(255,255,255,0.06)';
-            roundRect(ctx, 60, bibleY, W - 120, 130, 16);
-            ctx.fill();
-            ctx.strokeStyle = 'rgba(255,215,0,0.3)';
-            ctx.lineWidth = 1;
-            ctx.stroke();
+            // Вірш
+            const bibleY = wishY+55;
+            ctx.fillStyle='rgba(255,255,255,0.06)';
+            roundRect(ctx,60,bibleY,W-120,140,16); ctx.fill();
+            ctx.strokeStyle='rgba(255,215,0,0.3)'; ctx.lineWidth=1; ctx.stroke();
+            ctx.fillStyle='#ffe4b5'; ctx.font='italic bold 27px Georgia, serif';
+            wrapText(ctx, psalm||'', W/2, bibleY+52, W-160, 36, H-40);
 
-            // Psalm lines
-            ctx.fillStyle = '#ffe4b5';
-            ctx.font = 'italic 28px Georgia, serif';
-            ctx.textAlign = 'center';
-            const colonIdx = psalm.indexOf('—');
-            const ref = psalm.substring(0, colonIdx).trim();
-            const verse = psalm.substring(colonIdx + 1).trim();
-            ctx.fillText(ref, W / 2, bibleY + 45);
-            ctx.font = 'italic bold 27px Georgia, serif';
-            ctx.fillStyle = '#ffd700';
-            // wrap verse if needed
-            wrapText(ctx, verse, W / 2, bibleY + 88, W - 160, 34);
+            // Низ
+            ctx.font='28px serif'; ctx.fillStyle='#fff';
+            ctx.fillText(dc.bot, W/2, H-30);
 
-            // Hearts bottom
-            ctx.font = '28px serif';
-            ctx.fillStyle = '#fff';
-            ctx.fillText('💜💜💜💜💜💜💜💜💜💜', W / 2, H - 30);
-
-            // Download
-            const link = document.createElement('a');
-            link.download = `Вітальна_${name}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        }
-
-        function roundRect(ctx, x, y, w, h, r) {
-            ctx.beginPath();
-            ctx.moveTo(x + r, y);
-            ctx.lineTo(x + w - r, y);
-            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-            ctx.lineTo(x + w, y + h - r);
-            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-            ctx.lineTo(x + r, y + h);
-            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-            ctx.lineTo(x, y + r);
-            ctx.quadraticCurveTo(x, y, x + r, y);
-            ctx.closePath();
-        }
-
-        function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-            const words = text.split(' ');
-            let line = '';
-            for (let n = 0; n < words.length; n++) {
-                const testLine = line + words[n] + ' ';
-                if (ctx.measureText(testLine).width > maxWidth && n > 0) {
-                    ctx.fillText(line.trim(), x, y);
-                    line = words[n] + ' ';
-                    y += lineHeight;
-                } else {
-                    line = testLine;
-                }
+            if (doDownload) {
+                const link = document.createElement('a');
+                link.download = `Вітальна_${name}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
             }
-            ctx.fillText(line.trim(), x, y);
+            if (onDone) onDone();
         }
 
         if (photoId) {
-            // Шукаємо вже завантажений <img> на сторінці — він там вже є!
-            const existingImg = document.querySelector(`img[data-photoid="${photoId}"]`);
-
-            if (existingImg && existingImg.complete && existingImg.naturalWidth > 0) {
-                // Малюємо через createImageBitmap щоб уникнути tainted canvas
-                createImageBitmap(existingImg)
-                    .then(bitmap => drawCard(bitmap))
-                    .catch(() => {
-                        // Якщо і це не вийшло — малюємо через offscreen canvas trick
-                        drawCardFromImgElement(existingImg);
-                    });
-            } else {
-                // Фото ще не завантажилось — чекаємо
-                if (existingImg) {
-                    existingImg.onload = () => {
-                        createImageBitmap(existingImg)
-                            .then(bitmap => drawCard(bitmap))
-                            .catch(() => drawCardFromImgElement(existingImg));
-                    };
-                    existingImg.onerror = () => drawCard(null);
-                } else {
-                    drawCard(null);
-                }
-            }
+            const urls = [
+                `https://drive.google.com/thumbnail?id=${photoId}&sz=w800`,
+                `https://lh3.googleusercontent.com/d/${photoId}=w800`,
+                `https://drive.google.com/uc?export=view&id=${photoId}`,
+            ];
+            const tryNext = (i) => {
+                if (i >= urls.length) { drawCard(null); return; }
+                fetch(urls[i])
+                    .then(r => { if(!r.ok) throw 0; const ct=r.headers.get('content-type')||''; if(ct.includes('text/html')) throw 0; return r.blob(); })
+                    .then(blob => {
+                        if(!blob.type.startsWith('image/')) throw 0;
+                        const objUrl = URL.createObjectURL(blob);
+                        const img = new Image();
+                        img.onload = () => { drawCard(img); URL.revokeObjectURL(objUrl); };
+                        img.onerror = () => { URL.revokeObjectURL(objUrl); tryNext(i+1); };
+                        img.src = objUrl;
+                    })
+                    .catch(() => tryNext(i+1));
+            };
+            tryNext(0);
         } else {
             drawCard(null);
-        }
-
-        function drawCardFromImgElement(imgEl) {
-            // Останній варіант: малюємо img в окремий canvas і беремо пікселі
-            try {
-                const tmpCanvas = document.createElement('canvas');
-                tmpCanvas.width = imgEl.naturalWidth;
-                tmpCanvas.height = imgEl.naturalHeight;
-                tmpCanvas.getContext('2d').drawImage(imgEl, 0, 0);
-                const tmpImg = new Image();
-                tmpImg.onload = () => drawCard(tmpImg);
-                tmpImg.onerror = () => drawCard(null);
-                tmpImg.src = tmpCanvas.toDataURL();
-            } catch(e) {
-                drawCard(null);
-            }
         }
     }
 </script>
